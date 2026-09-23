@@ -3,7 +3,7 @@ package com.haoze.keynote.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.haoze.keynote.data.db.ScheduleDatabase
+import com.haoze.keynote.data.db.KeyNoteDatabase
 import com.haoze.keynote.util.AlarmScheduler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +17,7 @@ class BootReceiver : BroadcastReceiver() {
         val pendingResult = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val scheduleDao = ScheduleDatabase.getDatabase(context).scheduleDao()
+                val scheduleDao = KeyNoteDatabase.getDatabase(context).scheduleDao()
                 scheduleDao.getAllSchedules().first().forEach { schedule ->
                     if (schedule.reminderEnabled && schedule.date > System.currentTimeMillis()) {
                         AlarmScheduler.scheduleAlarm(

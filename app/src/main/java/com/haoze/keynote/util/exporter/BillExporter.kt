@@ -1,7 +1,7 @@
 package com.haoze.keynote.util.exporter
 
 import android.content.Context
-import com.haoze.keynote.data.db.BillDatabase
+import com.haoze.keynote.data.db.KeyNoteDatabase
 import com.haoze.keynote.data.db.entity.BillEntity
 import com.haoze.keynote.data.repository.BillRepository
 import com.haoze.keynote.util.ExportHelper
@@ -17,7 +17,7 @@ object BillExporter {
         endDate: Long? = null,
         categoryIds: List<Long>? = null
     ): Int {
-        val db = BillDatabase.getDatabase(context)
+        val db = KeyNoteDatabase.getDatabase(context)
         val repository = BillRepository(db.billDao(), db.categoryDao())
 
         val bills: List<BillEntity> = when {

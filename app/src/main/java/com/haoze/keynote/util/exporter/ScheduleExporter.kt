@@ -1,7 +1,7 @@
 package com.haoze.keynote.util.exporter
 
 import android.content.Context
-import com.haoze.keynote.data.db.ScheduleDatabase
+import com.haoze.keynote.data.db.KeyNoteDatabase
 import com.haoze.keynote.data.db.entity.ScheduleEntity
 import com.haoze.keynote.data.repository.ScheduleRepository
 import com.haoze.keynote.util.ExportHelper
@@ -19,7 +19,7 @@ object ScheduleExporter {
         endDate: Long? = null,
         format: ScheduleExportFormat = ScheduleExportFormat.ICS
     ): Int {
-        val db = ScheduleDatabase.getDatabase(context)
+        val db = KeyNoteDatabase.getDatabase(context)
         val repository = ScheduleRepository(db.scheduleDao())
 
         val schedules: List<ScheduleEntity> = when {

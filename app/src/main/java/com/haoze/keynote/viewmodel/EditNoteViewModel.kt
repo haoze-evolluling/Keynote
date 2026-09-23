@@ -325,7 +325,7 @@ class EditNoteViewModel(
             val arr = JSONArray(json)
             (0 until arr.length()).map { arr.getString(it) }
         } catch (_: Exception) {
-            listOf(json)
+            emptyList()
         }
     }
 

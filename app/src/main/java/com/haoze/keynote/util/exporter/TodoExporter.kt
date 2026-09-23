@@ -1,7 +1,7 @@
 package com.haoze.keynote.util.exporter
 
 import android.content.Context
-import com.haoze.keynote.data.db.TodoDatabase
+import com.haoze.keynote.data.db.KeyNoteDatabase
 import com.haoze.keynote.data.db.entity.TodoEntity
 import com.haoze.keynote.data.repository.TodoRepository
 import com.haoze.keynote.util.ExportHelper
@@ -17,7 +17,7 @@ object TodoExporter {
         startDate: Long? = null,
         endDate: Long? = null
     ): Int {
-        val db = TodoDatabase.getDatabase(context)
+        val db = KeyNoteDatabase.getDatabase(context)
         val repository = TodoRepository(db.todoDao())
 
         val todos: List<TodoEntity> = when {

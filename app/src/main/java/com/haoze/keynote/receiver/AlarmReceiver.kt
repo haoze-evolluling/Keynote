@@ -3,7 +3,7 @@ package com.haoze.keynote.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.haoze.keynote.data.db.ScheduleDatabase
+import com.haoze.keynote.data.db.KeyNoteDatabase
 import com.haoze.keynote.util.NotificationHelper
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -35,7 +35,7 @@ class AlarmReceiver : BroadcastReceiver() {
     }
 
     private suspend fun showScheduleReminder(context: Context, scheduleId: Long, intent: Intent) {
-        val schedule = ScheduleDatabase.getDatabase(context).scheduleDao().getScheduleById(scheduleId)
+        val schedule = KeyNoteDatabase.getDatabase(context).scheduleDao().getScheduleById(scheduleId)
         if (schedule?.isDeleted == true) return
 
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())

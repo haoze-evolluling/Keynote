@@ -11,8 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.haoze.keynote.data.db.BillDatabase
-import com.haoze.keynote.data.db.NoteDatabase
+import com.haoze.keynote.data.db.KeyNoteDatabase
 import com.haoze.keynote.data.db.entity.CategoryEntity
 import com.haoze.keynote.data.db.entity.TagEntity
 import com.haoze.keynote.data.remote.AiProvider
@@ -201,7 +200,7 @@ fun ExportDataScreen(
             scope.launch {
                 isExporting = true
                 try {
-                    val db = com.haoze.keynote.data.db.BillDatabase.getDatabase(context)
+                    val db = KeyNoteDatabase.getDatabase(context)
                     val count = AaSplitExporter.exportAaSplits(context, db.aaSplitDao(), startDate, endDate)
                     snackbarHostState.showSnackbar("成功导出 ${count} 条AA计算")
                 } catch (e: Exception) { snackbarHostState.showSnackbar("导出失败: ${e.message}") } finally { isExporting = false }
@@ -366,7 +365,7 @@ private fun NoteExportSheet(
     val tags = remember { mutableStateListOf<TagEntity>() }
 
     LaunchedEffect(Unit) {
-        val db = NoteDatabase.getDatabase(context)
+        val db = KeyNoteDatabase.getDatabase(context)
         tags.clear(); tags.addAll(db.tagDao().getActiveTags().first())
     }
 
@@ -418,7 +417,7 @@ private fun BillExportSheet(
     val categories = remember { mutableStateListOf<CategoryEntity>() }
 
     LaunchedEffect(Unit) {
-        val db = BillDatabase.getDatabase(context)
+        val db = KeyNoteDatabase.getDatabase(context)
         categories.clear(); categories.addAll(db.categoryDao().getAllCategories().first())
     }
 

@@ -4,7 +4,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.pdf.PdfDocument
-import com.haoze.keynote.data.db.NoteDatabase
+import com.haoze.keynote.data.db.KeyNoteDatabase
 import com.haoze.keynote.data.db.entity.NoteWithTags
 import com.haoze.keynote.data.repository.NoteRepository
 import com.haoze.keynote.util.ExportHelper
@@ -26,7 +26,7 @@ object NoteExporter {
         tagIds: List<Long>? = null,
         format: NoteExportFormat = NoteExportFormat.MARKDOWN
     ): Int {
-        val db = NoteDatabase.getDatabase(context)
+        val db = KeyNoteDatabase.getDatabase(context)
         val repository = NoteRepository(db.noteDao(), db.tagDao(), PreferencesManager(context))
 
         val notes: List<NoteWithTags> = when {
