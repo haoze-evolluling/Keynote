@@ -15,7 +15,6 @@ import com.haoze.keynote.data.db.KeyNoteDatabase
 import com.haoze.keynote.data.db.entity.CategoryEntity
 import com.haoze.keynote.data.db.entity.TagEntity
 import com.haoze.keynote.data.remote.AiProvider
-import com.haoze.keynote.ui.navigation.LocalOpenMainNav
 import com.haoze.keynote.ui.theme.DialogContent
 import com.haoze.keynote.ui.theme.LocalAppColors
 import com.haoze.keynote.ui.theme.ModalTokens

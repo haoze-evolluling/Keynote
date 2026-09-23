@@ -86,10 +86,6 @@ data class AppColors(
     val outlineVariant: Color,
     val background: Color,
     val onBackground: Color,
-    val transparent: Color,
-    val shadow: Color,
-    val dialogContainer: Color,
-    val unspecified: Color,
     val chartColors: List<Color>,
     val priorityLow: Color,
     val priorityMedium: Color,
@@ -123,8 +119,7 @@ private val FallbackDarkScheme = darkColorScheme(
 fun ColorScheme.toAppColors(darkTheme: Boolean) = AppColors(
     primary, onPrimary, primaryContainer, onPrimaryContainer, secondary, onSecondary, secondaryContainer, onSecondaryContainer,
     surface, onSurface, surfaceVariant, onSurfaceVariant, error, onError, errorContainer, onErrorContainer, tertiary, onTertiary,
-    tertiaryContainer, onTertiaryContainer, outline, outlineVariant, background, onBackground, Color.Transparent,
-    Color.Black.copy(alpha = if (darkTheme) 0.45f else 0.12f), surfaceContainerHigh, Color.Unspecified,
+    tertiaryContainer, onTertiaryContainer, outline, outlineVariant, background, onBackground,
     chartColors = listOf(primary, tertiary, secondary, error, primaryContainer, tertiaryContainer, secondaryContainer, outline, outlineVariant, surfaceVariant),
     priorityLow = if (darkTheme) Color(0xFF81C995) else Color(0xFF2E7D32),
     priorityMedium = if (darkTheme) Color(0xFFFFB74D) else Color(0xFFB06000),
@@ -139,28 +134,14 @@ object SpacingTokens {
     val contentSpacing = 12.dp
     val smallSpacing = 8.dp
     val tinySpacing = 4.dp
-    // ── Bluke 设计语言：卡片式布局 / 细线镂空 / 统一圆角 ──
-    val cardGap = 2.dp                // 分组条目之间的细线镂空间隙
-    val groupedOuterRadius = 28.dp    // 分组首尾条目的外圆角
-    val groupedInnerRadius = 4.dp     // 分组中间条目的内圆角
-    val listCardRadius = 28.dp        // 列表独立卡片圆角（DeviceRow 同款）
-    val cardRadius = 24.dp            // 大内容卡片圆角
+    val listCardRadius = 28.dp        // 列表独立卡片圆角
     val pillRadius = 20.dp            // Pill 按钮圆角
     val statusPillRadius = 12.dp      // 状态 pill / 嵌套小块圆角
     val tagRadius = 6.dp              // 小标签 / 徽章圆角
     val iconCircleSize = 40.dp        // 列表条目圆形图标容器
     val iconCircleInner = 20.dp       // 圆形容器内图标尺寸
-    val itemPaddingHorizontal = 16.dp // 条目水平内边距
-    val itemPaddingVertical = 14.dp   // 条目垂直内边距
-    val sectionSpacing = 16.dp        // 区块之间间距
     val iconSmall = 18.dp
     val iconMedium = 22.dp
-    val iconLarge = 24.dp
-    val actionRowHeight = 36.dp
-    val chipHeight = 24.dp
-    val cardElevation = 0.dp
-    val shadowElevation = 8.dp
-    val borderWidth = 1.dp
     val borderWidthThick = 2.dp
     val chartStrokeWidth = 2.dp
     val chartGridStrokeWidth = 1.dp
@@ -184,9 +165,7 @@ object SpacingTokens {
 object ModalTokens {
     val titleTextStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.SemiBold, lineHeight = 24.sp)
     val bodyTextStyle = TextStyle(fontSize = 14.sp, lineHeight = 20.sp)
-    val buttonTextStyle = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.5.sp)
     val labelTextStyle = TextStyle(fontSize = 12.sp, lineHeight = 16.sp)
-    val menuItemPaddingVertical = 8.dp
     val menuDividerPaddingVertical = 4.dp
 }
 

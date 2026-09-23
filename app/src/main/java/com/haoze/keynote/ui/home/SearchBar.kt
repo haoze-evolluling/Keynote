@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.haoze.keynote.ui.theme.SpacingTokens
 import androidx.compose.ui.res.painterResource
 import com.haoze.keynote.R

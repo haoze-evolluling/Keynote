@@ -64,9 +64,6 @@ interface NoteDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertCrossRef(crossRef: NoteTagCrossRef)
 
-    @Delete
-    suspend fun deleteCrossRef(crossRef: NoteTagCrossRef)
-
     @Query("DELETE FROM note_tag_cross_ref WHERE noteId = :noteId AND tagId = :tagId")
     suspend fun deleteTagFromNote(noteId: Long, tagId: Long)
 

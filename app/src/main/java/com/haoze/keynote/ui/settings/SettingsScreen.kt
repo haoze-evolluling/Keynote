@@ -26,7 +26,6 @@ import com.haoze.keynote.ui.components.SettingsItem
 import com.haoze.keynote.ui.components.SettingsNavigationItem
 import com.haoze.keynote.ui.components.SettingsRadioItem
 import com.haoze.keynote.ui.components.SettingsScaffold
-import com.haoze.keynote.ui.navigation.LocalOpenMainNav
 import com.haoze.keynote.ui.theme.DarkModePreference
 import com.haoze.keynote.viewmodel.SettingsViewModel
 import org.koin.compose.viewmodel.koinViewModel

@@ -3,7 +3,6 @@ package com.haoze.keynote.ui.trash
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,7 +20,6 @@ import com.haoze.keynote.ui.components.SettingsGroupTitle
 import com.haoze.keynote.ui.components.SettingsInfoText
 import com.haoze.keynote.ui.components.SettingsScaffold
 import com.haoze.keynote.ui.theme.LocalAppColors
-import com.haoze.keynote.ui.theme.SpacingTokens
 import androidx.compose.ui.res.painterResource
 import com.haoze.keynote.R
 

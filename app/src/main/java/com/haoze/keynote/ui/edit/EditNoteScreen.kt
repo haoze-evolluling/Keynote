@@ -1,7 +1,6 @@
 package com.haoze.keynote.ui.edit
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,7 +14,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
@@ -24,7 +22,6 @@ import org.koin.compose.viewmodel.koinViewModel
 import com.haoze.keynote.viewmodel.EditNoteViewModel
 import kotlinx.coroutines.launch
 import com.haoze.keynote.ui.common.ActionRow
-import com.haoze.keynote.ui.theme.DialogContent
 import com.haoze.keynote.ui.theme.LocalAppColors
 import com.haoze.keynote.ui.theme.ModalTokens
 import com.haoze.keynote.ui.theme.SpacingTokens

@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,7 +19,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
@@ -32,9 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
@@ -45,7 +41,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.haoze.keynote.R
 
@@ -64,7 +59,7 @@ fun SettingsScaffold(
     actions: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
-    // Bluke 页面层级：大标题 TopAppBar + 折叠滚动
+    // 页面层级：大标题 TopAppBar + 折叠滚动
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     Scaffold(
         modifier = modifier,
@@ -97,9 +92,6 @@ fun SettingsScaffold(
                 actions = { actions() },
                 colors = TopAppBarDefaults.largeTopAppBarColors(
                     containerColor = Color.Transparent,
-                    // 内容通过 innerPadding 排在顶栏下方，永远不会滚到顶栏底下，
-                    // 顶栏不需要滚动变色。若设为实色，M3 会从 Color.Transparent（RGB 为黑）
-                    // lerp 到该色，滚动中间态是一层半透明灰，表现为盖住上半屏的"阴影"。
                     scrolledContainerColor = Color.Transparent
                 ),
                 scrollBehavior = scrollBehavior
@@ -113,7 +105,6 @@ fun SettingsScaffold(
             }
         },
         content = { innerPadding ->
-            // LargeTopAppBar 折叠联动滚动
             Box(
                 Modifier
                     .fillMaxSize()
@@ -122,52 +113,6 @@ fun SettingsScaffold(
                 content(innerPadding)
             }
         }
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DrawerScaffold(
-    title: String,
-    onMenuClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    actions: @Composable RowScope.() -> Unit = {},
-    floatingActionButton: @Composable () -> Unit = {},
-    containerColor: Color = MaterialTheme.colorScheme.background,
-    content: @Composable (PaddingValues) -> Unit
-) {
-    Scaffold(
-        modifier = modifier,
-        containerColor = containerColor,
-        contentColor = MaterialTheme.colorScheme.onBackground,
-        contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onMenuClick) {
-                        Icon(
-                            painterResource(R.drawable.ic_menu),
-                            contentDescription = "菜单"
-                        )
-                    }
-                },
-                actions = actions,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = containerColor,
-                    scrolledContainerColor = containerColor
-                )
-            )
-        },
-        floatingActionButton = floatingActionButton,
-        floatingActionButtonPosition = FabPosition.End,
-        content = content
     )
 }
 
@@ -222,8 +167,6 @@ fun SettingsInfoText(
 
 @Composable
 fun SettingsDivider(modifier: Modifier = Modifier) {
-    // Bluke 式细线镂空：条目之间用 2dp 背景色缝隙代替传统分隔线，
-    // 让分组卡片在视觉上呈"独立条目 + 细线间隙"的镂空效果。
     HorizontalDivider(
         modifier = modifier.fillMaxWidth(),
         thickness = 2.dp,
@@ -258,7 +201,6 @@ fun SettingsItem(
         modifier
     }
 
-    // Bluke 条目节奏：有副标题/图标时垂直 20dp，否则 12dp
     val verticalPadding = if (!subtitle.isNullOrBlank() || leadingIcon != null) 20.dp else 12.dp
 
     Row(
@@ -303,60 +245,6 @@ fun SettingsItem(
 }
 
 @Composable
-fun SettingsSwitchItem(
-    title: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-    subtitle: String? = null,
-    leadingIcon: Painter? = null,
-    enabled: Boolean = true
-) {
-    SettingsItem(
-        title = title,
-        subtitle = subtitle,
-        leadingIcon = leadingIcon,
-        enabled = enabled,
-        modifier = modifier,
-        onClick = { onCheckedChange(!checked) },
-        trailing = {
-            Switch(
-                checked = checked,
-                enabled = enabled,
-                onCheckedChange = onCheckedChange
-            )
-        }
-    )
-}
-
-@Composable
-fun SettingsCheckboxItem(
-    title: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-    subtitle: String? = null,
-    leadingIcon: Painter? = null,
-    enabled: Boolean = true
-) {
-    SettingsItem(
-        title = title,
-        subtitle = subtitle,
-        leadingIcon = leadingIcon,
-        enabled = enabled,
-        modifier = modifier,
-        onClick = { onCheckedChange(!checked) },
-        trailing = {
-            Checkbox(
-                checked = checked,
-                enabled = enabled,
-                onCheckedChange = onCheckedChange
-            )
-        }
-    )
-}
-
-@Composable
 fun SettingsNavigationItem(
     title: String,
     onClick: () -> Unit,
@@ -391,29 +279,6 @@ fun SettingsNavigationItem(
                 )
             }
         }
-    )
-}
-
-@Composable
-fun SettingsTextItem(
-    title: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    subtitle: String? = null,
-    leadingIcon: Painter? = null,
-    textColor: Color = MaterialTheme.colorScheme.onSurface,
-    enabled: Boolean = true,
-    trailing: @Composable (() -> Unit)? = null
-) {
-    SettingsItem(
-        title = title,
-        subtitle = subtitle,
-        leadingIcon = leadingIcon,
-        titleColor = textColor,
-        enabled = enabled,
-        modifier = modifier,
-        onClick = onClick,
-        trailing = trailing
     )
 }
 

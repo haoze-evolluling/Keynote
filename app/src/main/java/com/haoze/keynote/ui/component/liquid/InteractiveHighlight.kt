@@ -15,7 +15,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.util.fastCoerceIn
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -36,7 +35,6 @@ class InteractiveHighlight(
     private var startPosition = Offset.Zero
     val offset: Offset get() = positionAnimation.value - startPosition
     val pressProgress: Float get() = pressProgressAnimation.value
-    val currentPosition: Offset get() = positionAnimation.value
 
     private val shader: RuntimeShader? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         runCatching {
@@ -128,21 +126,5 @@ class InteractiveHighlight(
             }
         }
         drawContent()
-    }
-
-    val gestureModifier: Modifier = Modifier.pointerInput(animationScope) {
-        inspectDragGestures(
-            onDragStart = { down ->
-                press(down.position)
-            },
-            onDragEnd = {
-                release()
-            },
-            onDragCancel = {
-                cancel()
-            }
-        ) { change, _ ->
-            updatePosition(change.position)
-        }
     }
 }

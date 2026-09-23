@@ -62,13 +62,7 @@ interface BillDao {
     fun getBillCountInRange(start: Long, end: Long): Flow<Int>
 
     @Query("SELECT * FROM bills WHERE isDeleted = 0 AND date BETWEEN :start AND :end ORDER BY date DESC")
-    fun getBillsByDateRange(start: Long, end: Long): Flow<List<BillEntity>>
-
-    @Query("SELECT * FROM bills WHERE isDeleted = 0 AND date BETWEEN :start AND :end ORDER BY date DESC")
     suspend fun getBillsByDateRangeOnce(start: Long, end: Long): List<BillEntity>
-
-    @Query("SELECT * FROM bills WHERE isDeleted = 0 AND date BETWEEN :start AND :end AND categoryId IN (:categoryIds) ORDER BY date DESC")
-    fun getBillsByDateRangeAndCategory(start: Long, end: Long, categoryIds: List<Long>): Flow<List<BillEntity>>
 
     @Query("SELECT * FROM bills WHERE isDeleted = 0 AND date BETWEEN :start AND :end AND categoryId IN (:categoryIds) ORDER BY date DESC")
     suspend fun getBillsByDateRangeAndCategoryOnce(start: Long, end: Long, categoryIds: List<Long>): List<BillEntity>

@@ -10,7 +10,6 @@ import com.haoze.keynote.util.PreferencesManager
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.json.JSONArray
-import org.json.JSONObject
 import com.haoze.keynote.ui.theme.DarkModePreference
 import com.haoze.keynote.ui.theme.toDarkModePreference
 import com.haoze.keynote.ui.theme.toInt

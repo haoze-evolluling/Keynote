@@ -2,16 +2,13 @@ package com.haoze.keynote.ui.home
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.koin.compose.viewmodel.koinViewModel
-import com.haoze.keynote.ui.navigation.LocalOpenMainNav
 import com.haoze.keynote.ui.theme.LocalAppColors
 import android.content.Intent
 import android.content.ClipData

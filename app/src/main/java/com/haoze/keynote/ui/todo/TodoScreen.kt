@@ -8,7 +8,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,7 +32,6 @@ import com.haoze.keynote.ui.components.SettingsGroup
 import com.haoze.keynote.ui.components.SettingsGroupTitle
 import com.haoze.keynote.ui.components.SettingsScaffold
 import com.haoze.keynote.ui.theme.ModalTokens
-import com.haoze.keynote.ui.theme.SpacingTokens
 import com.haoze.keynote.ui.theme.LocalAppColors
 import com.haoze.keynote.util.toDayStartMillis
 import kotlinx.coroutines.delay

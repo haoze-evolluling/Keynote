@@ -6,7 +6,6 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -35,7 +34,6 @@ import com.haoze.keynote.ui.components.SettingsScaffold
 import com.haoze.keynote.ui.theme.DialogContent
 import com.haoze.keynote.ui.theme.LocalAppColors
 import com.haoze.keynote.ui.theme.ModalTokens
-import com.haoze.keynote.ui.theme.SpacingTokens
 import androidx.compose.ui.res.painterResource
 import com.haoze.keynote.R
 

@@ -114,8 +114,7 @@ fun FloatingNavigationBar(
     val density = LocalDensity.current
     val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
     val animationScope = rememberCoroutineScope()
-    val tabsCount = items.size.coerceIn(BottomBarDestination.MIN_COUNT, BottomBarDestination.MAX_COUNT)
-
+    val tabsCount = items.size
     val navSectionWidthDp = when (tabsCount) {
         2 -> 204.dp
         3 -> 276.dp
@@ -451,26 +450,6 @@ fun FloatingNavigationBar(
     }
 }
 
-/**
- * 默认参数快捷重载（默认采用标准目标项列表）。
- */
-@Composable
-fun FloatingNavigationBar(
-    selectedPage: Int,
-    onPageSelected: (Int) -> Unit,
-    modifier: Modifier = Modifier,
-    pagerProgress: (() -> Float)? = null,
-    isGlassEnabled: Boolean = true,
-) {
-    FloatingNavigationBar(
-        selectedPage = selectedPage,
-        onPageSelected = onPageSelected,
-        items = BottomBarDestination.DEFAULT_DESTINATIONS,
-        modifier = modifier,
-        pagerProgress = pagerProgress,
-        isGlassEnabled = isGlassEnabled
-    )
-}
 
 
 

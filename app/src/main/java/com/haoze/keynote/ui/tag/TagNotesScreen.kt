@@ -2,7 +2,6 @@ package com.haoze.keynote.ui.tag
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,7 +12,6 @@ import org.koin.compose.viewmodel.koinViewModel
 import com.haoze.keynote.ui.home.NoteCard
 import com.haoze.keynote.ui.home.NoteActionBottomSheet
 import com.haoze.keynote.viewmodel.HomeViewModel
-import com.haoze.keynote.ui.navigation.LocalOpenMainNav
 import com.haoze.keynote.ui.theme.LocalAppColors
 import android.content.Intent
 import android.content.ClipData

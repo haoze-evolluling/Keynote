@@ -3,7 +3,6 @@ package com.haoze.keynote.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haoze.keynote.data.db.entity.NoteEntity
-import com.haoze.keynote.data.db.entity.NoteWithTags
 import com.haoze.keynote.data.db.entity.TagEntity
 import com.haoze.keynote.data.repository.NoteRepository
 import com.haoze.keynote.util.AppConstants
@@ -70,9 +69,6 @@ class EditNoteViewModel(
     private var undoDebounceJob: Job? = null
     private val undoDebounceMillis = AppConstants.UNDO_DEBOUNCE_MILLIS
 
-    init {
-    }
-
     fun loadNote(id: Long) {
         noteId = id
         loadNoteJob?.cancel()
@@ -119,14 +115,14 @@ class EditNoteViewModel(
     private fun pushSnapshot() {
         undoStack.add(UndoEntry(_title.value, _content.value))
         if (undoStack.size > AppConstants.UNDO_STACK_MAX_SIZE) {
-            undoStack.removeFirst()
+            undoStack.removeAt(0)
         }
         _canUndo.value = undoStack.isNotEmpty()
     }
 
     fun undo() {
         if (undoStack.isNotEmpty()) {
-            val entry = undoStack.removeLast()
+            val entry = undoStack.removeAt(undoStack.lastIndex)
             _title.value = entry.title
             _content.value = entry.content
             _canUndo.value = undoStack.isNotEmpty()
