@@ -286,7 +286,7 @@ fun AIChatScreen(
                 AlertDialog(
                     onDismissRequest = { showNewConversationConfirm = false },
                     title = { Text("开始新对话") },
-                    containerColor = colors.surface,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     textContentColor = colors.onSurface,
                     shape = RoundedCornerShape(28.dp),
                     text = { Text("当前对话已自动保存到历史记录。开始新对话后，可以从历史对话继续回来。") },
@@ -306,7 +306,7 @@ fun AIChatScreen(
                 AlertDialog(
                     onDismissRequest = { showDeleteConversationConfirm = false },
                     title = { Text("删除对话") },
-                    containerColor = colors.surface,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     textContentColor = colors.onSurface,
                     shape = RoundedCornerShape(28.dp),
                     text = { Text("删除后会进入回收站，可在回收站中恢复或永久删除。") },
@@ -355,7 +355,7 @@ private fun AIChatHistoryDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("历史对话") },
-        containerColor = colors.surface,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         textContentColor = colors.onSurface,
         shape = RoundedCornerShape(28.dp),
         text = {
@@ -925,7 +925,7 @@ private fun PendingBillDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("确认创建账单") },
-        containerColor = colors.surface,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         textContentColor = colors.onSurface,
         shape = RoundedCornerShape(28.dp),
         text = {
