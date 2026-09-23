@@ -214,17 +214,22 @@ fun AIChatScreen(
                 }
             }
         ) { innerPadding ->
-            val density = LocalDensity.current
-            val imeBottomDp = with(density) { WindowInsets.ime.getBottom(density).toDp() }
-            val navBottomDp = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
-            val inputBottomPadding = if (imeBottomDp > navBottomDp) {
-                imeBottomDp
-            } else {
-                navBottomDp + 66.dp
-            }
+            val imeBottomDp = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
+            val navBottomDp = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+            val isImeVisible = imeBottomDp > 0.dp
 
-            LaunchedEffect(imeBottomDp) {
-                if (imeBottomDp > navBottomDp && messages.isNotEmpty()) {
+            // 悬浮底栏高度 64.dp，底边距 16.dp，共占用 navBottomDp + 80.dp 空间。
+            // 预留 12.dp 悬浮呼吸空隙，底栏可见时避让距离为 80.dp + 12.dp = 92.dp。
+            // 当软键盘弹出时，底栏淡出隐藏，输入框避让距离平滑降为 0.dp，贴合键盘。
+            val bottomBarClearance by animateDpAsState(
+                targetValue = if (isImeVisible) 0.dp else 92.dp,
+                animationSpec = tween(durationMillis = 200),
+                label = "bottomBarClearance"
+            )
+            val inputBottomPadding = maxOf(navBottomDp + bottomBarClearance, imeBottomDp + 10.dp)
+
+            LaunchedEffect(isImeVisible) {
+                if (isImeVisible && messages.isNotEmpty()) {
                     listState.animateScrollToItem(messages.size - 1)
                 }
             }
@@ -854,7 +859,8 @@ private fun ChatInputBar(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 10.dp),
+            .padding(horizontal = 16.dp)
+            .padding(top = 8.dp),
         shape = RoundedCornerShape(28.dp),
         color = containerBg,
         border = borderStroke,

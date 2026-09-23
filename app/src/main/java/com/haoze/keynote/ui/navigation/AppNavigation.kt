@@ -9,6 +9,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -164,8 +165,7 @@ private fun MainHomeContent(
             }
         }
 
-        val density = LocalDensity.current
-        val isImeVisible = WindowInsets.ime.getBottom(density) > 0
+        val isImeVisible = WindowInsets.ime.asPaddingValues().calculateBottomPadding() > 0.dp
 
         AnimatedVisibility(
             visible = !isImeVisible,
@@ -177,7 +177,7 @@ private fun MainHomeContent(
                 .padding(bottom = 16.dp)
         ) {
             FloatingNavigationBar(
-                currentPage = pagerState.currentPage,
+                selectedPage = pagerState.currentPage,
                 onPageSelected = { targetPage ->
                     if (pagerState.currentPage != targetPage) {
                         coroutineScope.launch {
@@ -188,6 +188,7 @@ private fun MainHomeContent(
                         }
                     }
                 },
+                items = BottomBarDestination.DEFAULT_DESTINATIONS,
                 pagerProgress = { pagerState.currentPage + pagerState.currentPageOffsetFraction }
             )
         }

@@ -58,6 +58,7 @@ class DampedDragAnimation(
 
     val value: Float get() = valueAnimation.value
     val targetValue: Float get() = valueAnimation.targetValue
+    val isRunning: Boolean get() = valueAnimation.isRunning
     val pressProgress: Float get() = pressProgressAnimation.value
     val scaleX: Float get() = scaleXAnimation.value
     val scaleY: Float get() = scaleYAnimation.value
@@ -110,6 +111,11 @@ class DampedDragAnimation(
             launch { scaleXAnimation.animateTo(initialScale, scaleXAnimationSpec) }
             launch { scaleYAnimation.animateTo(initialScale, scaleYAnimationSpec) }
         }
+    }
+
+    suspend fun snapToValue(value: Float) {
+        val targetValue = value.coerceIn(valueRange)
+        valueAnimation.snapTo(targetValue)
     }
 
     fun updateValue(value: Float) {

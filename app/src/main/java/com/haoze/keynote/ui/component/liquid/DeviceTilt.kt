@@ -12,50 +12,96 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+
 data class DeviceTilt(
     val gravityX: Float = 0f,
     val gravityY: Float = -1f,
     val gravityZ: Float = 0f
 )
 
-// 传感器降频（视觉等效降耗）：tilt 仅驱动高光视差这类慢速动效，
-// 10Hz 采样 + 指数低通即可保留原有的"液体阻尼"跟随感，
-// 相比 SENSOR_DELAY_UI 减少约 40% 的传感器事件与随之而来的重组/重绘。
-private const val TILT_SAMPLE_PERIOD_US = 100_000 // 10 Hz
-private const val TILT_SMOOTHING_ALPHA = 0.45f
+/**
+ * Normalized (by GRAVITY_EARTH) squared delta below which a reading is dropped.
+ * Keeps a resting device from triggering recompositions for invisible jitter.
+ */
+private const val TILT_UPDATE_THRESHOLD_SQ = 1e-5f
 
+/**
+ * Gravity-driven tilt state used to steer the specular highlight light source.
+ *
+ * Sensor usage is strictly bounded to keep the cost negligible:
+ * - the listener is registered only while [enabled] is true AND the host lifecycle
+ *   is at least RESUMED (the consumer is composed on screen and the app is in
+ *   the foreground);
+ * - it is unregistered on ON_PAUSE and re-registered on ON_RESUME, so nothing
+ *   listens while the app is backgrounded;
+ * - registration is guarded (single listener per effect instance) and the
+ *   effect is keyed on [enabled]/lifecycleOwner, so recompositions never stack
+ *   duplicate registrations;
+ * - readings below [TILT_UPDATE_THRESHOLD_SQ] are dropped to avoid redundant
+ *   recompositions while the device rests.
+ */
 @Composable
-fun rememberDeviceTilt(): State<DeviceTilt> {
+fun rememberDeviceTilt(enabled: Boolean = true): State<DeviceTilt> {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val tiltState = remember { mutableStateOf(DeviceTilt()) }
-    DisposableEffect(context) {
+
+    DisposableEffect(enabled, lifecycleOwner) {
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
         val sensor = sensorManager?.getDefaultSensor(Sensor.TYPE_GRAVITY)
             ?: sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-        if (sensorManager == null || sensor == null) {
-            return@DisposableEffect onDispose {}
-        }
-        val listener = object : SensorEventListener {
-            override fun onSensorChanged(event: SensorEvent?) {
-                if (event != null && event.values.size >= 2) {
-                    val rawX = event.values[0] / SensorManager.GRAVITY_EARTH
+
+        var listener: SensorEventListener? = null
+
+        fun register() {
+            if (listener != null || sensorManager == null || sensor == null) return
+            val newListener = object : SensorEventListener {
+                override fun onSensorChanged(event: SensorEvent?) {
+                    if (event == null || event.values.size < 2) return
+                    val rawX = -event.values[0] / SensorManager.GRAVITY_EARTH
                     val rawY = event.values[1] / SensorManager.GRAVITY_EARTH
                     val rawZ = if (event.values.size >= 3) event.values[2] / SensorManager.GRAVITY_EARTH else 0f
-                    // 低通滤波：降频后平滑过渡，稳态收敛到真实重力方向
-                    val prev = tiltState.value
-                    tiltState.value = DeviceTilt(
-                        gravityX = prev.gravityX + (-rawX - prev.gravityX) * TILT_SMOOTHING_ALPHA,
-                        gravityY = prev.gravityY + (rawY - prev.gravityY) * TILT_SMOOTHING_ALPHA,
-                        gravityZ = prev.gravityZ + (rawZ - prev.gravityZ) * TILT_SMOOTHING_ALPHA
-                    )
+                    val current = tiltState.value
+                    val deltaX = rawX - current.gravityX
+                    val deltaY = rawY - current.gravityY
+                    if (deltaX * deltaX + deltaY * deltaY < TILT_UPDATE_THRESHOLD_SQ) return
+                    tiltState.value = DeviceTilt(rawX, rawY, rawZ)
                 }
+
+                override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
             }
-            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+            listener = newListener
+            sensorManager.registerListener(newListener, sensor, SensorManager.SENSOR_DELAY_UI)
         }
-        sensorManager.registerListener(listener, sensor, TILT_SAMPLE_PERIOD_US)
+
+        fun unregister() {
+            listener?.let { sensorManager?.unregisterListener(it) }
+            listener = null
+        }
+
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> register()
+                Lifecycle.Event.ON_PAUSE -> unregister()
+                else -> Unit
+            }
+        }
+
+        if (enabled) {
+            lifecycleOwner.lifecycle.addObserver(observer)
+            if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                register()
+            }
+        }
+
         onDispose {
-            sensorManager.unregisterListener(listener)
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            unregister()
         }
     }
     return tiltState
 }
+

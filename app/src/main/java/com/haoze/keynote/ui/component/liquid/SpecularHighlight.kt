@@ -2,6 +2,7 @@ package com.haoze.keynote.ui.component.liquid
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -77,13 +78,15 @@ private const val GRAVITY_DIR_THRESHOLD_SQ = 0.01f
 fun rememberGravityRotatedHighlight(
     base: SpecularHighlight,
     extraDegrees: Float = 0f,
+    tiltState: State<DeviceTilt>? = null,
 ): SpecularHighlight {
     val baseStyle = base.style
-    val tilt by rememberDeviceTilt()
-    val rotatedPrimary = remember(tilt, baseStyle.primaryLight, extraDegrees) {
+    val tilt = tiltState ?: rememberDeviceTilt()
+    val rotatedPrimary = remember(tilt.value, baseStyle.primaryLight, extraDegrees) {
         val basePrimary = baseStyle.primaryLight
-        val gx = tilt.gravityX
-        val gy = tilt.gravityY
+        val currentTilt = tilt.value
+        val gx = currentTilt.gravityX
+        val gy = currentTilt.gravityY
         val gMagSq = gx * gx + gy * gy
         val (lx0, ly0) = if (gMagSq > GRAVITY_DIR_THRESHOLD_SQ) {
             val invMag = 1f / sqrt(gMagSq)
