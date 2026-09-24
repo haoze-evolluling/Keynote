@@ -12,7 +12,7 @@ import java.net.URL
 import java.nio.charset.StandardCharsets
 
 data class DeepSeekRequest(
-    val model: String = "deepseek-v4-flash",
+    val model: String,
     val messages: List<Message>,
     val temperature: Double = 0.3,
     val maxTokens: Int = 150
@@ -33,17 +33,22 @@ data class Choice(
 
 class AiApiException(message: String) : Exception(message)
 
-private fun resolveChatCompletionsUrl(configuredUrl: String): String {
+private const val CHAT_COMPLETIONS_SUFFIX = "/chat/completions"
+
+internal fun normalizeBaseUrl(configuredUrl: String): String {
     val normalized = configuredUrl.trim().trimEnd('/')
     require(normalized.startsWith("https://") || normalized.startsWith("http://")) {
         "请求地址必须以 http:// 或 https:// 开头"
     }
-    return if (normalized.endsWith("/chat/completions", ignoreCase = true)) {
-        normalized
+    return if (normalized.endsWith(CHAT_COMPLETIONS_SUFFIX, ignoreCase = true)) {
+        normalized.removeSuffix(CHAT_COMPLETIONS_SUFFIX)
     } else {
-        "$normalized/chat/completions"
+        normalized
     }
 }
+
+internal fun resolveChatCompletionsUrl(configuredUrl: String): String =
+    "${normalizeBaseUrl(configuredUrl)}$CHAT_COMPLETIONS_SUFFIX"
 
 interface DeepSeekApi {
     suspend fun generateTags(auth: String, request: DeepSeekRequest): DeepSeekResponse

@@ -6,13 +6,51 @@ import kotlinx.coroutines.flow.first
 import org.json.JSONArray
 import org.json.JSONObject
 
+/**
+ * 一条已配置的 AI 服务厂商。[presetId] 非空表示它由 [AiProviderPresets] 里的预设创建，编辑时据此
+ * 回填该预设的接口地址；手填地址的自定义厂商 presetId 为空。[modelName] 一律来自在线拉取或手填。
+ */
 data class AiProvider(
     val id: String,
     val name: String,
     val baseUrl: String,
     val apiKey: String = "",
-    val modelName: String = "deepseek-v4-flash"
+    val modelName: String = "",
+    val presetId: String = ""
 )
+
+/** 厂商列表与 SharedPreferences 里 providers_json 的唯一编解码入口。 */
+fun decodeAiProviders(raw: String): List<AiProvider> = try {
+    val arr = JSONArray(raw)
+    (0 until arr.length()).mapNotNull { i ->
+        val obj = arr.optJSONObject(i) ?: return@mapNotNull null
+        AiProvider(
+            id = obj.optString("id"),
+            name = obj.optString("name"),
+            baseUrl = obj.optString("baseUrl"),
+            apiKey = obj.optString("apiKey"),
+            modelName = obj.optString("modelName"),
+            presetId = obj.optString("presetId")
+        )
+    }
+} catch (_: Exception) {
+    emptyList()
+}
+
+fun encodeAiProviders(providers: List<AiProvider>): String {
+    val arr = JSONArray()
+    providers.forEach { p ->
+        arr.put(JSONObject().apply {
+            put("id", p.id)
+            put("name", p.name)
+            put("baseUrl", p.baseUrl)
+            put("apiKey", p.apiKey)
+            put("modelName", p.modelName)
+            put("presetId", p.presetId)
+        })
+    }
+    return arr.toString()
+}
 
 class AiApiManager(private val preferencesManager: PreferencesManager) {
 
@@ -23,41 +61,11 @@ class AiApiManager(private val preferencesManager: PreferencesManager) {
         return providers.find { it.id == activeId } ?: providers.firstOrNull()
     }
 
-    suspend fun getProviders(): List<AiProvider> {
-        val raw = preferencesManager.providersJson.first()
-        return try {
-            val arr = JSONArray(raw)
-            val list = mutableListOf<AiProvider>()
-            for (i in 0 until arr.length()) {
-                val obj = arr.getJSONObject(i)
-                list.add(
-                    AiProvider(
-                        id = obj.optString("id", ""),
-                        name = obj.optString("name", ""),
-                        baseUrl = obj.optString("baseUrl", ""),
-                        apiKey = obj.optString("apiKey", ""),
-                        modelName = obj.optString("modelName", "deepseek-v4-flash")
-                    )
-                )
-            }
-            list
-        } catch (_: Exception) {
-            emptyList()
-        }
-    }
+    suspend fun getProviders(): List<AiProvider> =
+        decodeAiProviders(preferencesManager.providersJson.first())
 
     suspend fun saveProviders(providers: List<AiProvider>) {
-        val arr = JSONArray()
-        providers.forEach { p ->
-            arr.put(JSONObject().apply {
-                put("id", p.id)
-                put("name", p.name)
-                put("baseUrl", p.baseUrl)
-                put("apiKey", p.apiKey)
-                put("modelName", p.modelName)
-            })
-        }
-        preferencesManager.saveProvidersJson(arr.toString())
+        preferencesManager.saveProvidersJson(encodeAiProviders(providers))
     }
 
     suspend fun resolveApiKey(provider: AiProvider?): String {

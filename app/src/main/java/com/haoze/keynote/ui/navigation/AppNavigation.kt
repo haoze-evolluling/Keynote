@@ -18,7 +18,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,7 +39,6 @@ import com.haoze.keynote.ui.tag.TagNotesScreen
 import com.haoze.keynote.ui.todo.TodoScreen
 import com.haoze.keynote.ui.toolbox.KnowledgeVaultScreen
 import com.haoze.keynote.ui.trash.TrashScreen
-import com.haoze.keynote.viewmodel.SettingsViewModel
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -111,7 +109,7 @@ fun AppPage(
                 },
                 onBack = onBack
             )
-            Screen.AiProviderManage.route -> ProviderManagePage(onBack)
+            Screen.AiProviderManage.route -> AiProviderManageScreen(onNavigateBack = onBack)
             Screen.TagNotes.route -> if (tagId != null) TagNotesScreen(
                 tagId = tagId,
                 tagName = tagName.orEmpty(),
@@ -192,22 +190,4 @@ private fun MainHomeContent(
             )
         }
     }
-}
-
-@Composable
-private fun ProviderManagePage(onBack: () -> Unit) {
-    val viewModel: SettingsViewModel = koinViewModel()
-    val providers = viewModel.providers.collectAsState().value
-    val activeProviderId = viewModel.activeProviderId.collectAsState().value
-    AiProviderManageScreen(
-        onNavigateBack = onBack,
-        providers = providers,
-        activeProviderId = activeProviderId,
-        onSelectProvider = viewModel::selectProvider,
-        onUpdateProvider = viewModel::updateProvider,
-        onDeleteProvider = viewModel::deleteCustomProvider,
-        onAddProvider = { name, url, model, key -> viewModel.addCustomProvider(name, url, model, key) },
-        sealKey = viewModel::sealZidaipass,
-        openKey = viewModel::openZidaipass
-    )
 }
