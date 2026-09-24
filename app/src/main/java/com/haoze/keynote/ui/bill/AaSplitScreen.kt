@@ -19,7 +19,9 @@ import com.haoze.keynote.ui.components.SettingsDivider
 import com.haoze.keynote.ui.components.SettingsGroup
 import com.haoze.keynote.ui.components.SettingsGroupTitle
 import com.haoze.keynote.ui.components.SettingsScaffold
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.haoze.keynote.ui.components.AppAlertDialog as AlertDialog
+import com.haoze.keynote.ui.components.AppConfirmDialog
+import com.haoze.keynote.ui.components.AppDialogButton
 import com.haoze.keynote.ui.theme.DialogContent
 import com.haoze.keynote.ui.theme.LocalAppColors
 import com.haoze.keynote.ui.theme.ModalTokens
@@ -98,9 +100,6 @@ fun AaSplitScreen(
         AlertDialog(
             onDismissRequest = { showDetailDialog = null },
             title = { Text(aaSplit.title) },
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            textContentColor = colors.onSurface,
-            shape = RoundedCornerShape(28.dp),
             text = {
                 DialogContent(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("总金额", style = ModalTokens.labelTextStyle, color = colors.onSurfaceVariant)
@@ -118,32 +117,26 @@ fun AaSplitScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showDetailDialog = null }) { Text("关闭") }
+                AppDialogButton(label = "关闭", onClick = { showDetailDialog = null })
             },
             dismissButton = {
-                TextButton(
-                    onClick = { showDeleteConfirm = aaSplit; showDetailDialog = null },
-                    colors = ButtonDefaults.textButtonColors(contentColor = colors.error)
-                ) { Text("删除") }
+                AppDialogButton(
+                    label = "删除",
+                    destructive = true,
+                    onClick = { showDeleteConfirm = aaSplit; showDetailDialog = null }
+                )
             }
         )
     }
 
     if (showDeleteConfirm != null) {
-        AlertDialog(
+        AppConfirmDialog(
             onDismissRequest = { showDeleteConfirm = null },
-            title = { Text("删除记录") },
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            textContentColor = colors.onSurface,
-            shape = RoundedCornerShape(28.dp),
-            text = { Text("确定要删除这条AA计算记录吗？") },
-            confirmButton = {
-                TextButton(
-                    onClick = { viewModel.deleteAaSplit(showDeleteConfirm!!); showDeleteConfirm = null },
-                    colors = ButtonDefaults.textButtonColors(contentColor = colors.error)
-                ) { Text("删除") }
-            },
-            dismissButton = { TextButton(onClick = { showDeleteConfirm = null }) { Text("取消") } }
+            title = "删除记录",
+            message = "确定要删除这条AA计算记录吗？",
+            confirmLabel = "删除",
+            destructive = true,
+            onConfirm = { viewModel.deleteAaSplit(showDeleteConfirm!!); showDeleteConfirm = null }
         )
     }
 }
@@ -223,9 +216,6 @@ private fun AaSplitCreateDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("新建AA计算") },
-        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        textContentColor = colors.onSurface,
-        shape = RoundedCornerShape(28.dp),
         text = {
             DialogContent(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
@@ -233,7 +223,8 @@ private fun AaSplitCreateDialog(
                     onValueChange = { title = it },
                     label = { Text("标题（可选）") },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = ModalTokens.innerShape
                 )
                 OutlinedTextField(
                     value = totalAmount,
@@ -241,6 +232,7 @@ private fun AaSplitCreateDialog(
                     label = { Text("总金额") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
+                    shape = ModalTokens.innerShape,
                     prefix = { Text("¥") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next)
                 )
@@ -250,6 +242,7 @@ private fun AaSplitCreateDialog(
                     label = { Text("参与人数") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
+                    shape = ModalTokens.innerShape,
                     suffix = { Text("人") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done)
                 )
@@ -257,7 +250,8 @@ private fun AaSplitCreateDialog(
                     value = note,
                     onValueChange = { note = it },
                     label = { Text("备注（可选）") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = ModalTokens.innerShape
                 )
                 Text(
                     "人均：¥$perPersonPreview",
@@ -268,15 +262,16 @@ private fun AaSplitCreateDialog(
             }
         },
         confirmButton = {
-            TextButton(
+            AppDialogButton(
+                label = "创建",
                 onClick = {
                     if (isValid) {
                         onConfirm(title.takeIf { it.isNotBlank() } ?: "AA计算", totalAmountValue!!, personCountValue!!, note.takeIf { it.isNotBlank() })
                     }
                 },
                 enabled = isValid
-            ) { Text("创建") }
+            )
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } }
+        dismissButton = { AppDialogButton(label = "取消", onClick = onDismiss) }
     )
 }

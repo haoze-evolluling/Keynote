@@ -8,10 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,6 +28,10 @@ import com.haoze.keynote.ui.components.SettingsDivider
 import com.haoze.keynote.ui.components.SettingsGroup
 import com.haoze.keynote.ui.components.SettingsGroupTitle
 import com.haoze.keynote.ui.components.SettingsScaffold
+import com.haoze.keynote.ui.components.AppAlertDialog as AlertDialog
+import com.haoze.keynote.ui.components.AppDatePickerDialog as DatePickerDialog
+import com.haoze.keynote.ui.components.AppDialogButton
+import com.haoze.keynote.ui.components.AppTimePickerDialog
 import com.haoze.keynote.ui.theme.ModalTokens
 import com.haoze.keynote.ui.theme.LocalAppColors
 import com.haoze.keynote.util.toDayStartMillis
@@ -290,14 +291,14 @@ private fun TodoActionBottomSheet(
     onToggleComplete: () -> Unit
 ) {
     ActionMenuDialog(title = "待办操作", onDismiss = onDismiss) {
-            ActionRow(painterResource(R.drawable.ic_edit), "编辑", onEdit)
-            ActionRow(
-                painterResource(R.drawable.ic_done),
-                if (todo.isCompleted) "标记未完成" else "标记完成",
-                onToggleComplete
-            )
-            HorizontalDivider(modifier = Modifier.padding(vertical = ModalTokens.menuDividerPaddingVertical))
-            ActionRow(painterResource(R.drawable.ic_delete), "删除", onDelete, isDestructive = true)
+        ActionRow(painterResource(R.drawable.ic_edit), "编辑", onEdit)
+        ActionRow(
+            painterResource(R.drawable.ic_done),
+            if (todo.isCompleted) "标记未完成" else "标记完成",
+            onToggleComplete
+        )
+        HorizontalDivider(modifier = Modifier.padding(vertical = ModalTokens.menuDividerPaddingVertical))
+        ActionRow(painterResource(R.drawable.ic_delete), "删除", onDelete, isDestructive = true)
     }
 }
 
@@ -329,9 +330,7 @@ private fun TodoDialog(
         title = { Text(if (todo != null) "编辑待办" else "新建待办") },
         text = {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
+                modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 OutlinedTextField(
@@ -339,6 +338,7 @@ private fun TodoDialog(
                     onValueChange = { title = it },
                     label = { Text("标题") },
                     singleLine = true,
+                    shape = ModalTokens.innerShape,
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -397,6 +397,7 @@ private fun TodoDialog(
                         label = { Text("截止日期") },
                         placeholder = { Text("点击选择") },
                         singleLine = true,
+                        shape = ModalTokens.innerShape,
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
                             disabledTextColor = colors.onSurface,
@@ -420,6 +421,7 @@ private fun TodoDialog(
                             readOnly = true,
                             label = { Text("分类") },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(categoryExpanded) },
+                            shape = ModalTokens.innerShape,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .menuAnchor()
@@ -446,6 +448,7 @@ private fun TodoDialog(
                     value = notesText,
                     onValueChange = { notesText = it },
                     label = { Text("备注") },
+                    shape = ModalTokens.innerShape,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(80.dp),
@@ -454,7 +457,8 @@ private fun TodoDialog(
             }
         },
         confirmButton = {
-            TextButton(
+            AppDialogButton(
+                label = "保存",
                 onClick = {
                     if (title.isNotBlank()) onConfirm(
                         title, priority, dueDate, hasTime, categoryId, noteId,
@@ -462,14 +466,11 @@ private fun TodoDialog(
                     )
                 },
                 enabled = title.isNotBlank()
-            ) { Text("保存") }
+            )
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("取消") }
-        },
-        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        textContentColor = colors.onSurface,
-        shape = RoundedCornerShape(28.dp),
+            AppDialogButton("取消", onDismiss)
+        }
     )
 
     if (showDatePicker) {
@@ -478,18 +479,17 @@ private fun TodoDialog(
         )
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
-            shape = RoundedCornerShape(28.dp),
             confirmButton = {
-                TextButton(onClick = {
+                AppDialogButton("确定", onClick = {
                     datePickerState.selectedDateMillis?.let {
                         dueDate = it.toDayStartMillis()
                         showDatePicker = false
                         pendingTime = true
                     }
-                }) { Text("确定") }
+                })
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("取消") }
+                AppDialogButton("取消", onClick = { showDatePicker = false })
             }
         ) { DatePicker(state = datePickerState) }
     }
@@ -511,29 +511,20 @@ private fun TodoDialog(
             initialMinute = cal.get(Calendar.MINUTE),
             is24Hour = true
         )
-        AlertDialog(
+        AppTimePickerDialog(
             onDismissRequest = { showTimePicker = false },
-            title = { Text("选择时间") },
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            textContentColor = colors.onSurface,
-            shape = RoundedCornerShape(28.dp),
-            text = { TimePicker(state = timePickerState) },
-            confirmButton = {
-                TextButton(onClick = {
-                    dueDate = Calendar.getInstance().apply {
-                        timeInMillis = dueDate ?: System.currentTimeMillis()
-                        set(Calendar.HOUR_OF_DAY, timePickerState.hour)
-                        set(Calendar.MINUTE, timePickerState.minute)
-                        set(Calendar.SECOND, 0)
-                        set(Calendar.MILLISECOND, 0)
-                    }.timeInMillis
-                    hasTime = true
-                    showTimePicker = false
-                }) { Text("确定") }
+            onConfirm = {
+                dueDate = Calendar.getInstance().apply {
+                    timeInMillis = dueDate ?: System.currentTimeMillis()
+                    set(Calendar.HOUR_OF_DAY, timePickerState.hour)
+                    set(Calendar.MINUTE, timePickerState.minute)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }.timeInMillis
+                hasTime = true
+                showTimePicker = false
             },
-            dismissButton = {
-                TextButton(onClick = { showTimePicker = false }) { Text("取消") }
-            },
+            content = { TimePicker(state = timePickerState) }
         )
     }
 }

@@ -15,7 +15,6 @@ import com.haoze.keynote.data.db.KeyNoteDatabase
 import com.haoze.keynote.data.db.entity.CategoryEntity
 import com.haoze.keynote.data.db.entity.TagEntity
 import com.haoze.keynote.data.remote.AiProvider
-import com.haoze.keynote.ui.theme.DialogContent
 import com.haoze.keynote.ui.theme.LocalAppColors
 import com.haoze.keynote.ui.theme.ModalTokens
 import com.haoze.keynote.ui.theme.SpacingTokens
@@ -44,6 +43,10 @@ import com.haoze.keynote.ui.components.SettingsInfoText
 import com.haoze.keynote.ui.components.SettingsLoadingContent
 import com.haoze.keynote.ui.components.SettingsNavigationItem
 import com.haoze.keynote.ui.components.SettingsScaffold
+import com.haoze.keynote.ui.components.AppDialogButton
+import com.haoze.keynote.ui.components.AppModalBottomSheet
+import com.haoze.keynote.ui.components.ModalInfoCard
+import com.haoze.keynote.ui.components.AppDatePickerDialog as DatePickerDialog
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -236,7 +239,6 @@ private fun AiProviderExportSheet(
     onDismiss: () -> Unit,
     onExport: (Set<String>) -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var selectedProviderIds by remember { mutableStateOf<Set<String>>(emptySet()) }
     var showWarning by remember { mutableStateOf(true) }
     val providers = remember { mutableStateListOf<AiProvider>() }
@@ -257,77 +259,66 @@ private fun AiProviderExportSheet(
         }
     }
 
-    ModalBottomSheet(
+    AppModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        title = "导出 AI 厂商配置",
+        iconRes = R.drawable.ic_psychology
     ) {
-        DialogContent(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 32.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text("导出 AI 厂商配置", style = ModalTokens.titleTextStyle)
-
-            if (showWarning) {
-                Surface(
-                    color = MaterialTheme.colorScheme.error.copy(alpha = 0.12f),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.35f)),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            painterResource(R.drawable.ic_info),
-                            contentDescription = null,
-                            tint = LocalAppColors.current.error,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "导出文件包含明文 API Key，请妥善保管，避免泄露。",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = LocalAppColors.current.onErrorContainer
-                        )
-                    }
-                }
-                TextButton(onClick = { showWarning = false }, modifier = Modifier.align(Alignment.End)) {
-                    Text("已知晓")
-                }
-            }
-
-            if (providers.isEmpty()) {
-                Text("暂未配置任何 AI 厂商", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            } else {
-                Text("选择要导出的厂商", style = ModalTokens.titleTextStyle)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    providers.forEach { provider ->
-                        val isSelected = provider.id in selectedProviderIds
-                        FilterChip(
-                            selected = isSelected,
-                            onClick = {
-                                selectedProviderIds = if (isSelected) {
-                                    selectedProviderIds - provider.id
-                                } else {
-                                    selectedProviderIds + provider.id
-                                }
-                            },
-                            label = { Text(provider.name) },
-                            leadingIcon = if (isSelected) {
-                                { Icon(painterResource(R.drawable.ic_check), contentDescription = null, modifier = Modifier.size(16.dp)) }
-                            } else null
-                        )
-                    }
-                }
-            }
-
-            Button(
-                onClick = { onExport(selectedProviderIds) },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(SpacingTokens.pillRadius),
-                enabled = providers.isNotEmpty() && selectedProviderIds.isNotEmpty()
+        if (showWarning) {
+            ModalInfoCard(
+                color = MaterialTheme.colorScheme.error.copy(alpha = 0.12f),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.35f))
             ) {
-                Text("确认导出")
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painterResource(R.drawable.ic_info),
+                        contentDescription = null,
+                        tint = LocalAppColors.current.error,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        "导出文件包含明文 API Key，请妥善保管，避免泄露。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = LocalAppColors.current.onErrorContainer
+                    )
+                }
             }
+            AppDialogButton("已知晓", onClick = { showWarning = false }, modifier = Modifier.align(Alignment.End))
+        }
+
+        if (providers.isEmpty()) {
+            Text("暂未配置任何 AI 厂商", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        } else {
+            Text("选择要导出的厂商", style = ModalTokens.titleTextStyle)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                providers.forEach { provider ->
+                    val isSelected = provider.id in selectedProviderIds
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = {
+                            selectedProviderIds = if (isSelected) {
+                                selectedProviderIds - provider.id
+                            } else {
+                                selectedProviderIds + provider.id
+                            }
+                        },
+                        label = { Text(provider.name) },
+                        leadingIcon = if (isSelected) {
+                            { Icon(painterResource(R.drawable.ic_check), contentDescription = null, modifier = Modifier.size(16.dp)) }
+                        } else null
+                    )
+                }
+            }
+        }
+
+        Button(
+            onClick = { onExport(selectedProviderIds) },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(SpacingTokens.pillRadius),
+            enabled = providers.isNotEmpty() && selectedProviderIds.isNotEmpty()
+        ) {
+            Text("确认导出")
         }
     }
 }
@@ -341,20 +332,13 @@ private fun ExportSheet(
     onConfirm: () -> Unit,
     confirmLabel: String = "确认导出"
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    ModalBottomSheet(
+    AppModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        title = title,
+        iconRes = R.drawable.ic_file_download
     ) {
-        DialogContent(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 32.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(title, style = ModalTokens.titleTextStyle)
-            filterContent()
-            Button(onClick = onConfirm, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(SpacingTokens.pillRadius)) { Text(confirmLabel) }
-        }
+        filterContent()
+        Button(onClick = onConfirm, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(SpacingTokens.pillRadius)) { Text(confirmLabel) }
     }
 }
 
@@ -543,22 +527,22 @@ private fun DateRangeSelector(
         }
     }
     if (startDate != null || endDate != null) {
-        TextButton(onClick = { onStartChange(null); onEndChange(null) }) { Text("清除日期") }
+        AppDialogButton("清除日期", onClick = { onStartChange(null); onEndChange(null) })
     }
 
     if (showStartPicker) {
         val datePickerState = rememberDatePickerState(initialSelectedDateMillis = startDate)
         DatePickerDialog(onDismissRequest = { showStartPicker = false },
-            confirmButton = { TextButton(onClick = { onStartChange(datePickerState.selectedDateMillis); showStartPicker = false }) { Text("确定") } },
-            dismissButton = { TextButton(onClick = { showStartPicker = false }) { Text("取消") } }
+            confirmButton = { AppDialogButton("确定", onClick = { onStartChange(datePickerState.selectedDateMillis); showStartPicker = false }) },
+            dismissButton = { AppDialogButton("取消", onClick = { showStartPicker = false }) }
         ) { DatePicker(state = datePickerState) }
     }
 
     if (showEndPicker) {
         val datePickerState = rememberDatePickerState(initialSelectedDateMillis = endDate)
         DatePickerDialog(onDismissRequest = { showEndPicker = false },
-            confirmButton = { TextButton(onClick = { onEndChange(datePickerState.selectedDateMillis); showEndPicker = false }) { Text("确定") } },
-            dismissButton = { TextButton(onClick = { showEndPicker = false }) { Text("取消") } }
+            confirmButton = { AppDialogButton("确定", onClick = { onEndChange(datePickerState.selectedDateMillis); showEndPicker = false }) },
+            dismissButton = { AppDialogButton("取消", onClick = { showEndPicker = false }) }
         ) { DatePicker(state = datePickerState) }
     }
 }

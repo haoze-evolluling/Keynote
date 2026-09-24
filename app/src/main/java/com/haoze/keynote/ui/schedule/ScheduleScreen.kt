@@ -10,7 +10,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,6 +29,11 @@ import com.haoze.keynote.ui.theme.DialogContent
 import com.haoze.keynote.ui.theme.LocalAppColors
 import com.haoze.keynote.ui.theme.ModalTokens
 import com.haoze.keynote.ui.common.ActionMenuDialog
+import com.haoze.keynote.ui.components.AppAlertDialog as AlertDialog
+import com.haoze.keynote.ui.components.AppConfirmDialog
+import com.haoze.keynote.ui.components.AppDatePickerDialog
+import com.haoze.keynote.ui.components.AppDialogButton
+import com.haoze.keynote.ui.components.AppTimePickerDialog
 import com.haoze.keynote.ui.components.SettingsDivider
 import com.haoze.keynote.ui.components.SettingsGroup
 import com.haoze.keynote.ui.components.SettingsGroupTitle
@@ -199,22 +203,16 @@ fun ScheduleScreen(
     }
 
     showDeleteConfirm?.let { schedule ->
-        AlertDialog(
+        AppConfirmDialog(
             onDismissRequest = { showDeleteConfirm = null },
-            title = { Text("删除日程") },
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            textContentColor = colors.onSurface,
-            shape = RoundedCornerShape(28.dp),
-            text = { Text("确定要删除「${schedule.title}」吗？") },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.deleteSchedule(schedule)
-                    showDeleteConfirm = null
-                }) { Text("删除", color = colors.error) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteConfirm = null }) { Text("取消") }
-            },
+            title = "删除日程",
+            message = "确定要删除「${schedule.title}」吗？",
+            confirmLabel = "删除",
+            destructive = true,
+            onConfirm = {
+                viewModel.deleteSchedule(schedule)
+                showDeleteConfirm = null
+            }
         )
     }
 
@@ -272,9 +270,6 @@ fun ScheduleScreen(
         AlertDialog(
             onDismissRequest = { showLinkNoteDialog = null },
             title = { Text("选择关联笔记") },
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            textContentColor = colors.onSurface,
-            shape = RoundedCornerShape(28.dp),
             text = {
                 if (notes.isEmpty()) {
                     Text("暂无笔记", color = colors.outline)
@@ -290,17 +285,17 @@ fun ScheduleScreen(
                                     style = ModalTokens.bodyTextStyle,
                                     modifier = Modifier.weight(1f)
                                 )
-                                TextButton(onClick = {
+                                AppDialogButton(label = "选择", onClick = {
                                     viewModel.linkNote(scheduleId, noteWithTags.note.id)
                                     showLinkNoteDialog = null
-                                }) { Text("选择") }
+                                })
                             }
                         }
                     }
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showLinkNoteDialog = null }) { Text("取消") }
+                AppDialogButton(label = "取消", onClick = { showLinkNoteDialog = null })
             },
         )
     }
@@ -313,30 +308,28 @@ fun ScheduleScreen(
                 pendingAiScheduleId = null
             },
             title = { Text("AI 生成笔记预览") },
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            textContentColor = colors.onSurface,
-            shape = RoundedCornerShape(28.dp),
             text = {
                 OutlinedTextField(
                     value = editedContent,
                     onValueChange = { editedContent = it },
                     modifier = Modifier.fillMaxWidth().heightIn(min = 200.dp, max = 400.dp),
+                    shape = ModalTokens.innerShape,
                     maxLines = Int.MAX_VALUE
                 )
             },
             confirmButton = {
-                TextButton(onClick = {
+                AppDialogButton(label = "保存", onClick = {
                     pendingAiScheduleId?.let { scheduleId ->
                         viewModel.saveAiGeneratedNote(scheduleId, editedContent)
                     }
                     pendingAiScheduleId = null
-                }) { Text("保存") }
+                })
             },
             dismissButton = {
-                TextButton(onClick = {
+                AppDialogButton(label = "取消", onClick = {
                     viewModel.discardAiGeneratedNote()
                     pendingAiScheduleId = null
-                }) { Text("取消") }
+                })
             },
         )
     }
@@ -424,6 +417,7 @@ private fun ScheduleDialog(
                     onValueChange = { editTitle = it },
                     label = { Text("日程标题") },
                     singleLine = true,
+                    shape = ModalTokens.innerShape,
                     modifier = Modifier.fillMaxWidth()
                 )
                 // 开始时间
@@ -435,6 +429,7 @@ private fun ScheduleDialog(
                         enabled = false,
                         label = { Text("开始时间") },
                         singleLine = true,
+                        shape = ModalTokens.innerShape,
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
                             disabledTextColor = colors.onSurface,
@@ -459,6 +454,7 @@ private fun ScheduleDialog(
                         label = { Text("结束时间（可选）") },
                         placeholder = { Text("点击选择结束时间") },
                         singleLine = true,
+                        shape = ModalTokens.innerShape,
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
                             disabledTextColor = colors.onSurface,
@@ -479,6 +475,7 @@ private fun ScheduleDialog(
                     onValueChange = { editLocation = it },
                     label = { Text("地点（可选）") },
                     singleLine = true,
+                    shape = ModalTokens.innerShape,
                     modifier = Modifier.fillMaxWidth()
                 )
                 // 任务事项
@@ -486,6 +483,7 @@ private fun ScheduleDialog(
                     value = editDescription,
                     onValueChange = { editDescription = it },
                     label = { Text("任务事项（可选）") },
+                    shape = ModalTokens.innerShape,
                     modifier = Modifier.fillMaxWidth().height(100.dp),
                     maxLines = 4
                 )
@@ -524,9 +522,7 @@ private fun ScheduleDialog(
                     }
                 }
                 if (!notificationPermissionGranted) {
-                    TextButton(onClick = onRequestNotificationPermission) {
-                        Text("授权通知以接收日程提醒")
-                    }
+                    AppDialogButton(label = "授权通知以接收日程提醒", onClick = onRequestNotificationPermission)
                     Text(
                         "未授权通知时，日程仍会保存，但不会弹出系统提醒。",
                         style = MaterialTheme.typography.bodySmall,
@@ -537,13 +533,14 @@ private fun ScheduleDialog(
                 if (linkedNote != null) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("关联: ${linkedNote.note.title.ifBlank { "无标题" }}", style = ModalTokens.bodyTextStyle, modifier = Modifier.weight(1f))
-                        TextButton(onClick = { editNoteId = null }) { Text("取消关联") }
+                        AppDialogButton(label = "取消关联", onClick = { editNoteId = null })
                     }
                 }
             }
         },
         confirmButton = {
-            TextButton(
+            AppDialogButton(
+                label = "保存",
                 onClick = {
                     if (editTitle.isNotBlank()) onConfirm(
                         editTitle, editDate, editEndDate,
@@ -555,32 +552,28 @@ private fun ScheduleDialog(
                     )
                 },
                 enabled = editTitle.isNotBlank()
-            ) { Text("保存") }
+            )
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("取消") }
+            AppDialogButton(label = "取消", onClick = onDismiss)
         },
-        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        textContentColor = colors.onSurface,
-        shape = RoundedCornerShape(28.dp),
     )
 
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState(initialSelectedDateMillis = editDate)
-        DatePickerDialog(
+        AppDatePickerDialog(
             onDismissRequest = { showDatePicker = false },
-            shape = RoundedCornerShape(28.dp),
             confirmButton = {
-                    TextButton(onClick = {
-                        datePickerState.selectedDateMillis?.let {
-                            editDate = it.toDayStartMillis()
-                            showDatePicker = false
-                            pendingTime = true
-                        }
-                    }) { Text("确定") }
+                AppDialogButton(label = "确定", onClick = {
+                    datePickerState.selectedDateMillis?.let {
+                        editDate = it.toDayStartMillis()
+                        showDatePicker = false
+                        pendingTime = true
+                    }
+                })
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("取消") }
+                AppDialogButton(label = "取消", onClick = { showDatePicker = false })
             }
         ) { DatePicker(state = datePickerState) }
     }
@@ -592,47 +585,37 @@ private fun ScheduleDialog(
             initialMinute = cal.get(Calendar.MINUTE),
             is24Hour = true
         )
-        AlertDialog(
+        AppTimePickerDialog(
             onDismissRequest = { showTimePicker = false },
-            title = { Text("选择时间") },
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            textContentColor = colors.onSurface,
-            shape = RoundedCornerShape(28.dp),
-            text = { TimePicker(state = timePickerState) },
-            confirmButton = {
-                TextButton(onClick = {
-                    editDate = Calendar.getInstance().apply {
-                        timeInMillis = editDate
-                        set(Calendar.HOUR_OF_DAY, timePickerState.hour)
-                        set(Calendar.MINUTE, timePickerState.minute)
-                        set(Calendar.SECOND, 0)
-                        set(Calendar.MILLISECOND, 0)
-                    }.timeInMillis
-                    showTimePicker = false
-                }) { Text("确定") }
+            onConfirm = {
+                editDate = Calendar.getInstance().apply {
+                    timeInMillis = editDate
+                    set(Calendar.HOUR_OF_DAY, timePickerState.hour)
+                    set(Calendar.MINUTE, timePickerState.minute)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }.timeInMillis
+                showTimePicker = false
             },
-            dismissButton = {
-                TextButton(onClick = { showTimePicker = false }) { Text("取消") }
-            },
+            content = { TimePicker(state = timePickerState) }
         )
     }
 
     if (showEndDatePicker) {
         val endDatePickerState = rememberDatePickerState(initialSelectedDateMillis = editEndDate ?: System.currentTimeMillis())
-        DatePickerDialog(
+        AppDatePickerDialog(
             onDismissRequest = { showEndDatePicker = false },
-            shape = RoundedCornerShape(28.dp),
             confirmButton = {
-                TextButton(onClick = {
+                AppDialogButton(label = "确定", onClick = {
                     endDatePickerState.selectedDateMillis?.let {
                         editEndDate = it.toDayStartMillis()
                         showEndDatePicker = false
                         pendingEndTime = true
                     }
-                }) { Text("确定") }
+                })
             },
             dismissButton = {
-                TextButton(onClick = { showEndDatePicker = false }) { Text("取消") }
+                AppDialogButton(label = "取消", onClick = { showEndDatePicker = false })
             }
         ) { DatePicker(state = endDatePickerState) }
     }
@@ -644,28 +627,20 @@ private fun ScheduleDialog(
             initialMinute = cal.get(Calendar.MINUTE),
             is24Hour = true
         )
-        AlertDialog(
+        AppTimePickerDialog(
             onDismissRequest = { showEndTimePicker = false },
-            title = { Text("选择结束时间") },
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            textContentColor = colors.onSurface,
-            shape = RoundedCornerShape(28.dp),
-            text = { TimePicker(state = endTimePickerState) },
-            confirmButton = {
-                TextButton(onClick = {
-                    editEndDate = Calendar.getInstance().apply {
-                        timeInMillis = editEndDate ?: System.currentTimeMillis()
-                        set(Calendar.HOUR_OF_DAY, endTimePickerState.hour)
-                        set(Calendar.MINUTE, endTimePickerState.minute)
-                        set(Calendar.SECOND, 0)
-                        set(Calendar.MILLISECOND, 0)
-                    }.timeInMillis
-                    showEndTimePicker = false
-                }) { Text("确定") }
+            title = "选择结束时间",
+            onConfirm = {
+                editEndDate = Calendar.getInstance().apply {
+                    timeInMillis = editEndDate ?: System.currentTimeMillis()
+                    set(Calendar.HOUR_OF_DAY, endTimePickerState.hour)
+                    set(Calendar.MINUTE, endTimePickerState.minute)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }.timeInMillis
+                showEndTimePicker = false
             },
-            dismissButton = {
-                TextButton(onClick = { showEndTimePicker = false }) { Text("取消") }
-            },
+            content = { TimePicker(state = endTimePickerState) }
         )
     }
 }

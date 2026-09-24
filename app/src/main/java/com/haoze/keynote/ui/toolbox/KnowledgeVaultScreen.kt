@@ -19,8 +19,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
@@ -33,7 +31,6 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -52,6 +49,9 @@ import androidx.compose.ui.unit.sp
 import org.koin.compose.viewmodel.koinViewModel
 import com.haoze.keynote.R
 import com.haoze.keynote.data.db.entity.KnowledgeVaultEntity
+import com.haoze.keynote.ui.components.AppAlertDialog as AlertDialog
+import com.haoze.keynote.ui.components.AppConfirmDialog
+import com.haoze.keynote.ui.components.AppDialogButton
 import com.haoze.keynote.ui.components.IconCircle
 import com.haoze.keynote.ui.components.MiniBadge
 import com.haoze.keynote.ui.components.SettingsDivider
@@ -60,6 +60,7 @@ import com.haoze.keynote.ui.components.SettingsGroupTitle
 import com.haoze.keynote.ui.components.SettingsScaffold
 import com.haoze.keynote.ui.home.SearchBar
 import com.haoze.keynote.ui.theme.LocalAppColors
+import com.haoze.keynote.ui.theme.ModalTokens
 import com.haoze.keynote.ui.theme.SpacingTokens
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -281,29 +282,15 @@ fun KnowledgeVaultScreen(
     // 删除确认弹窗
     if (itemToDelete != null) {
         val item = itemToDelete!!
-        AlertDialog(
+        AppConfirmDialog(
             onDismissRequest = { itemToDelete = null },
-            title = { Text("删除资料") },
-            shape = RoundedCornerShape(28.dp),
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            textContentColor = colors.onSurface,
-            text = {
-                Text("确定要删除「${item.title.ifBlank { item.note }.take(20)}」吗？")
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.deleteKnowledgeItem(item)
-                        itemToDelete = null
-                    }
-                ) {
-                    Text("删除", color = colors.error)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { itemToDelete = null }) {
-                    Text("取消")
-                }
+            title = "删除资料",
+            message = "确定要删除「${item.title.ifBlank { item.note }.take(20)}」吗？",
+            confirmLabel = "删除",
+            destructive = true,
+            onConfirm = {
+                viewModel.deleteKnowledgeItem(item)
+                itemToDelete = null
             }
         )
     }
@@ -630,21 +617,10 @@ private fun KnowledgeVaultItemDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(
-                if (isEdit) "编辑资料" else "添加资料",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-        },
-        shape = RoundedCornerShape(28.dp),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        textContentColor = colors.onSurface,
+        title = { Text(if (isEdit) "编辑资料" else "添加资料") },
         text = {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
+                modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
@@ -661,7 +637,7 @@ private fun KnowledgeVaultItemDialog(
                             selected = category == cat,
                             onClick = { category = cat },
                             label = { Text(cat, style = MaterialTheme.typography.labelSmall) },
-                            shape = RoundedCornerShape(10.dp)
+                            shape = ModalTokens.innerShape
                         )
                     }
                 }
@@ -672,7 +648,7 @@ private fun KnowledgeVaultItemDialog(
                     label = { Text("标题") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = ModalTokens.innerShape,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = MaterialTheme.colorScheme.surface,
                         unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
@@ -686,7 +662,7 @@ private fun KnowledgeVaultItemDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 96.dp),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = ModalTokens.innerShape,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = MaterialTheme.colorScheme.surface,
                         unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
@@ -699,7 +675,7 @@ private fun KnowledgeVaultItemDialog(
                     label = { Text("来源 / 链接 / 作者（选填）") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = ModalTokens.innerShape,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = MaterialTheme.colorScheme.surface,
                         unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
@@ -724,7 +700,8 @@ private fun KnowledgeVaultItemDialog(
             }
         },
         confirmButton = {
-            TextButton(
+            AppDialogButton(
+                label = "保存",
                 onClick = {
                     val effectiveTitle = title.ifBlank { note.take(24) }
                     val effectiveNote = note.ifBlank { title }
@@ -740,14 +717,10 @@ private fun KnowledgeVaultItemDialog(
                         )
                     }
                 }
-            ) {
-                Text("保存")
-            }
+            )
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消")
-            }
+            AppDialogButton(label = "取消", onClick = onDismiss)
         }
     )
 }

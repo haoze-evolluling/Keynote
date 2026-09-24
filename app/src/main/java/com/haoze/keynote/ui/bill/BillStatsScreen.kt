@@ -17,6 +17,8 @@ import java.util.Locale
 import com.haoze.keynote.ui.components.SettingsGroup
 import com.haoze.keynote.ui.components.SettingsGroupTitle
 import com.haoze.keynote.ui.components.SettingsScaffold
+import com.haoze.keynote.ui.components.AppDatePickerDialog
+import com.haoze.keynote.ui.components.AppDialogButton
 import com.haoze.keynote.ui.theme.LocalAppColors
 import com.haoze.keynote.ui.theme.SpacingTokens
 import androidx.compose.ui.res.painterResource
@@ -194,10 +196,10 @@ fun BillStatsScreen(
             initialSelectedDateMillis = if (pickingStart) startMillis else endMillis
         )
 
-        DatePickerDialog(
+        AppDatePickerDialog(
             onDismissRequest = { showCustomRangePicker = false },
             confirmButton = {
-                TextButton(onClick = {
+                AppDialogButton(label = if (pickingStart) "下一步" else "确定", onClick = {
                     datePickerState.selectedDateMillis?.let { utcMillis ->
                         val localCal = java.util.Calendar.getInstance().apply {
                             timeInMillis = utcMillis
@@ -224,10 +226,10 @@ fun BillStatsScreen(
                             showCustomRangePicker = false
                         }
                     }
-                }) { Text(if (pickingStart) "下一步" else "确定") }
+                })
             },
             dismissButton = {
-                TextButton(onClick = { showCustomRangePicker = false }) { Text("取消") }
+                AppDialogButton(label = "取消", onClick = { showCustomRangePicker = false })
             }
         ) {
             DatePicker(state = datePickerState)

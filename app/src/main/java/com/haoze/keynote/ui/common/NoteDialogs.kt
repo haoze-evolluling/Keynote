@@ -3,18 +3,17 @@ package com.haoze.keynote.ui.common
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.AlertDialog
+import com.haoze.keynote.ui.components.AppAlertDialog as AlertDialog
+import com.haoze.keynote.ui.components.AppConfirmDialog
+import com.haoze.keynote.ui.components.AppDialogButton
 import com.haoze.keynote.ui.theme.DialogContent
 import com.haoze.keynote.ui.theme.LocalAppColors
 import com.haoze.keynote.ui.theme.ModalTokens
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,26 +37,17 @@ fun NoteDeleteConfirmDialog(
     onConfirm: (Long) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val colors = LocalAppColors.current
     if (show && noteId != null) {
-        AlertDialog(
+        AppConfirmDialog(
             onDismissRequest = onDismiss,
-            title = { Text("删除笔记") },
-            text = { Text("确定要删除这篇笔记吗？删除后可在回收站中恢复。") },
-            confirmButton = {
-                TextButton(onClick = {
-                    onConfirm(noteId)
-                    onDismiss()
-                }) {
-                    Text("删除", color = colors.error)
-                }
+            title = "删除笔记",
+            message = "确定要删除这篇笔记吗？删除后可在回收站中恢复。",
+            confirmLabel = "删除",
+            onConfirm = {
+                onConfirm(noteId)
+                onDismiss()
             },
-            dismissButton = {
-                TextButton(onClick = onDismiss) { Text("取消") }
-            },
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            textContentColor = colors.onSurface,
-            shape = RoundedCornerShape(28.dp),
+            destructive = true
         )
     }
 }
@@ -97,11 +87,8 @@ fun NoteDetailsDialog(
                 }
             },
             confirmButton = {
-                TextButton(onClick = onDismiss) { Text("关闭") }
-            },
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            textContentColor = colors.onSurface,
-            shape = RoundedCornerShape(28.dp),
+                AppDialogButton("关闭", onDismiss)
+            }
         )
     }
 }
@@ -124,24 +111,23 @@ fun NoteAddTagDialog(
                     onValueChange = { tagName = it },
                     label = { Text("标签名称") },
                     singleLine = true,
+                    shape = ModalTokens.innerShape,
                     modifier = Modifier.fillMaxWidth()
                 )
             },
             confirmButton = {
-                TextButton(
+                AppDialogButton(
+                    label = "添加",
                     onClick = {
                         onAddTag(noteId, tagName)
                         onDismiss()
                     },
                     enabled = tagName.isNotBlank()
-                ) { Text("添加") }
+                )
             },
             dismissButton = {
-                TextButton(onClick = onDismiss) { Text("取消") }
-            },
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            textContentColor = MaterialTheme.colorScheme.onSurface,
-            shape = RoundedCornerShape(28.dp),
+                AppDialogButton("取消", onDismiss)
+            }
         )
     }
 }
@@ -183,11 +169,8 @@ fun NoteManageTagsDialog(
                 }
             },
             confirmButton = {
-                TextButton(onClick = onDismiss) { Text("关闭") }
-            },
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            textContentColor = colors.onSurface,
-            shape = RoundedCornerShape(28.dp),
+                AppDialogButton("关闭", onDismiss)
+            }
         )
     }
 }

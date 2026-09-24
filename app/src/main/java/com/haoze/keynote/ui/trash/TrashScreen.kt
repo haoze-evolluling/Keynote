@@ -1,6 +1,5 @@
 package com.haoze.keynote.ui.trash
 
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
@@ -19,6 +18,7 @@ import com.haoze.keynote.ui.components.SettingsGroup
 import com.haoze.keynote.ui.components.SettingsGroupTitle
 import com.haoze.keynote.ui.components.SettingsInfoText
 import com.haoze.keynote.ui.components.SettingsScaffold
+import com.haoze.keynote.ui.components.AppConfirmDialog
 import com.haoze.keynote.ui.theme.LocalAppColors
 import androidx.compose.ui.res.painterResource
 import com.haoze.keynote.R
@@ -102,22 +102,16 @@ fun TrashScreen(
     }
 
     pendingPermanentDelete?.let { item ->
-        AlertDialog(
+        AppConfirmDialog(
             onDismissRequest = { pendingPermanentDelete = null },
-            title = { Text("永久删除") },
-            text = { Text("永久删除后无法恢复，确定继续吗？") },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.permanentlyDelete(item)
-                    pendingPermanentDelete = null
-                }) { Text("永久删除", color = colors.error) }
+            title = "永久删除",
+            message = "永久删除后无法恢复，确定继续吗？",
+            confirmLabel = "永久删除",
+            onConfirm = {
+                viewModel.permanentlyDelete(item)
+                pendingPermanentDelete = null
             },
-            dismissButton = {
-                TextButton(onClick = { pendingPermanentDelete = null }) { Text("取消") }
-            },
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            textContentColor = colors.onSurface,
-            shape = RoundedCornerShape(28.dp),
+            destructive = true
         )
     }
 }

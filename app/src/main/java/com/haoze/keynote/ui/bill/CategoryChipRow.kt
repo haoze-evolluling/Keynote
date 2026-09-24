@@ -5,9 +5,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.shape.RoundedCornerShape
 import com.haoze.keynote.data.db.entity.CategoryEntity
+import com.haoze.keynote.ui.components.AppAlertDialog as AlertDialog
+import com.haoze.keynote.ui.components.AppDialogButton
 import com.haoze.keynote.ui.theme.LocalAppColors
+import com.haoze.keynote.ui.theme.ModalTokens
 
 @Composable
 fun CategoryChipRow(
@@ -38,14 +40,14 @@ fun CategoryChipRow(
                         onSelectCategory(if (selectedCategoryId == category.id) null else category.id)
                     },
                     label = { Text(category.name) },
-                    shape = RoundedCornerShape(12.dp)
+                    shape = ModalTokens.innerShape
                 )
             }
             FilterChip(
                 selected = false,
                 onClick = { showAddDialog = true },
                 label = { Text("+") },
-                shape = RoundedCornerShape(12.dp)
+                shape = ModalTokens.innerShape
             )
         }
     }
@@ -55,20 +57,19 @@ fun CategoryChipRow(
         AlertDialog(
             onDismissRequest = { showAddDialog = false },
             title = { Text("新建类别") },
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            textContentColor = colors.onSurface,
-            shape = RoundedCornerShape(28.dp),
             text = {
                 OutlinedTextField(
                     value = newName,
                     onValueChange = { newName = it },
                     label = { Text("类别名称") },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = ModalTokens.innerShape
                 )
             },
             confirmButton = {
-                TextButton(
+                AppDialogButton(
+                    label = "创建",
                     onClick = {
                         if (newName.isNotBlank()) {
                             onAddCategory(newName.trim())
@@ -76,10 +77,10 @@ fun CategoryChipRow(
                         }
                     },
                     enabled = newName.isNotBlank()
-                ) { Text("创建") }
+                )
             },
             dismissButton = {
-                TextButton(onClick = { showAddDialog = false }) { Text("取消") }
+                AppDialogButton(label = "取消", onClick = { showAddDialog = false })
             }
         )
     }

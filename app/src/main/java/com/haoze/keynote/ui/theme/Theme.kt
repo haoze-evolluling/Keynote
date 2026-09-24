@@ -4,8 +4,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
@@ -26,6 +24,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.lerp
@@ -96,8 +95,7 @@ data class AppColors(
     val statTotalSpending: Color,
     val statBillCount: Color,
     val statDailyAvg: Color,
-    val statTopCategory: Color,
-    val modalContainer: Color
+    val statTopCategory: Color
 )
 
 val LocalAppColors = staticCompositionLocalOf<AppColors> { error("No AppColors provided") }
@@ -158,8 +156,7 @@ fun ColorScheme.toAppColors(darkTheme: Boolean) = AppColors(
     priorityLow = if (darkTheme) Color(0xFF81C995) else Color(0xFF2E7D32),
     priorityMedium = if (darkTheme) Color(0xFFFFB74D) else Color(0xFFB06000),
     priorityHigh = if (darkTheme) Color(0xFFFF8A80) else Color(0xFFBA1A1A),
-    statTotalSpending = error, statBillCount = tertiary, statDailyAvg = if (darkTheme) Color(0xFF81C995) else Color(0xFF2E7D32), statTopCategory = primary,
-    modalContainer = surfaceContainerHigh
+    statTotalSpending = error, statBillCount = tertiary, statDailyAvg = if (darkTheme) Color(0xFF81C995) else Color(0xFF2E7D32), statTopCategory = primary
 )
 
 // ─── Spacing ──────────────────────────────────────────────────────────────────
@@ -197,21 +194,58 @@ object SpacingTokens {
 
 // ─── Modal / Typography ───────────────────────────────────────────────────────
 
+/**
+ * 模态框设计令牌（对齐「谛听」设计语言）：所有 Dialog / Bottom Sheet 的圆角、底色、内嵌块
+ * 圆角都只从这里取值，页面代码不再各自传 shape 与 containerColor。
+ * 对话框走 surfaceContainerHigh（3dp 色调高度），抽屉走 surfaceContainerLow（6dp），
+ * 两者的浅淡色差由 KeyNoteTheme 里 toModalContainerColor / toModalSheetContainerColor 提供。
+ */
 object ModalTokens {
     val titleTextStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.SemiBold, lineHeight = 24.sp)
     val bodyTextStyle = TextStyle(fontSize = 14.sp, lineHeight = 20.sp)
     val labelTextStyle = TextStyle(fontSize = 12.sp, lineHeight = 16.sp)
     val menuDividerPaddingVertical = 4.dp
 
+    /** 对话框外壳：28dp 全圆角，与列表卡片同档 */
+    val dialogShape: Shape
+        @Composable
+        get() = MaterialTheme.shapes.extraLarge
+
+    /** 底部抽屉：仅顶部两角 28dp */
+    val sheetShape: Shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+
+    /** 对话框内嵌信息块 / 输入框：12dp，与 SettingsCornerShape 同档 */
+    val innerShape: Shape = RoundedCornerShape(12.dp)
+
     val containerColor: Color
         @Composable
         get() = MaterialTheme.colorScheme.surfaceContainerHigh
+
+    val sheetContainerColor: Color
+        @Composable
+        get() = MaterialTheme.colorScheme.surfaceContainerLow
+
+    val onContainer: Color
+        @Composable
+        get() = MaterialTheme.colorScheme.onSurface
+
+    /** 内嵌信息块的淡色底：40% 透明 surfaceVariant */
+    val innerCardColor: Color
+        @Composable
+        get() = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+
+    /** 内容区高度上限（占屏高比例），超出部分由 AppAlertDialog 内部滚动 */
+    const val maxHeightFraction = 0.8f
 }
 
 val Typography = Typography(
     bodyLarge = TextStyle(fontFamily = FontFamily.Default, fontWeight = FontWeight.Normal, fontSize = 16.sp, lineHeight = 24.sp, letterSpacing = 0.5.sp)
 )
 
+/**
+ * 模态框正文容器。滚动由 AppAlertDialog / AppModalBottomSheet 统一负责，
+ * 这里只提供纵向排布，不要再叠加 verticalScroll，否则会出现嵌套同向滚动。
+ */
 @Composable
 fun DialogContent(
     modifier: Modifier = Modifier,
@@ -219,7 +253,7 @@ fun DialogContent(
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Column(modifier = modifier.verticalScroll(rememberScrollState()), verticalArrangement = verticalArrangement, horizontalAlignment = horizontalAlignment, content = content)
+    Column(modifier = modifier, verticalArrangement = verticalArrangement, horizontalAlignment = horizontalAlignment, content = content)
 }
 
 // ─── Shapes ───────────────────────────────────────────────────────────────────

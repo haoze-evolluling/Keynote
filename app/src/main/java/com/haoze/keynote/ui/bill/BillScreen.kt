@@ -4,7 +4,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -31,6 +30,11 @@ import com.haoze.keynote.ui.components.SettingsDivider
 import com.haoze.keynote.ui.components.SettingsGroup
 import com.haoze.keynote.ui.components.SettingsGroupTitle
 import com.haoze.keynote.ui.components.SettingsScaffold
+import com.haoze.keynote.ui.components.AppAlertDialog as AlertDialog
+import com.haoze.keynote.ui.components.AppConfirmDialog
+import com.haoze.keynote.ui.components.AppDatePickerDialog
+import com.haoze.keynote.ui.components.AppDialogButton
+import com.haoze.keynote.ui.components.AppTimePickerDialog
 import com.haoze.keynote.ui.theme.DialogContent
 import com.haoze.keynote.ui.theme.LocalAppColors
 import com.haoze.keynote.ui.theme.ModalTokens
@@ -120,19 +124,13 @@ fun BillScreen(
     }
 
     if (showDeleteConfirm != null) {
-        AlertDialog(
+        AppConfirmDialog(
             onDismissRequest = { showDeleteConfirm = null },
-            title = { Text("删除账单") },
-            text = { Text("确定要删除这条账单记录吗？") },
-            confirmButton = {
-                TextButton(onClick = { showDeleteConfirm?.let { viewModel.deleteBill(it) }; showDeleteConfirm = null }) {
-                    Text("删除", color = colors.error)
-                }
-            },
-            dismissButton = { TextButton(onClick = { showDeleteConfirm = null }) { Text("取消") } },
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            textContentColor = colors.onSurface,
-            shape = RoundedCornerShape(28.dp),
+            title = "删除账单",
+            message = "确定要删除这条账单记录吗？",
+            confirmLabel = "删除",
+            destructive = true,
+            onConfirm = { showDeleteConfirm?.let { viewModel.deleteBill(it) }; showDeleteConfirm = null }
         )
     }
 
@@ -157,10 +155,7 @@ fun BillScreen(
                         Text(dateFormat.format(Date(bill.date)), style = ModalTokens.bodyTextStyle)
                     }
                 },
-                confirmButton = { TextButton(onClick = { showBillDetailsForBill = null }) { Text("关闭") } },
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                textContentColor = colors.onSurface,
-                shape = RoundedCornerShape(28.dp),
+                confirmButton = { AppDialogButton(label = "关闭", onClick = { showBillDetailsForBill = null }) }
             )
         }
     }
@@ -240,20 +235,25 @@ private fun BillFormDialog(
                     categories = categories, selectedCategoryId = editCategoryId,
                     onSelectCategory = { editCategoryId = it }, onAddCategory = addCategory
                 )
-                OutlinedTextField(value = editItem, onValueChange = { editItem = it }, label = { Text("消费项目") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(
+                    value = editItem, onValueChange = { editItem = it }, label = { Text("消费项目") },
+                    singleLine = true, modifier = Modifier.fillMaxWidth(), shape = ModalTokens.innerShape
+                )
                 OutlinedTextField(
                     value = editAmount,
                     onValueChange = { editAmount = it },
                     label = { Text("金额") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
+                    shape = ModalTokens.innerShape,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done)
                 )
                 DateField(editDate = editDate, dateFormat = dateFormat, colors = colors, onClick = { showDatePicker = true })
             }
         },
         confirmButton = {
-            TextButton(
+            AppDialogButton(
+                label = if (title == "新建账单") "创建" else "保存",
                 onClick = {
                     val amount = editAmount.toDoubleOrNull()
                     if (editItem.isNotBlank() && amount != null) {
@@ -261,26 +261,23 @@ private fun BillFormDialog(
                     }
                 },
                 enabled = editItem.isNotBlank() && editAmount.toDoubleOrNull() != null
-            ) { Text(if (title == "新建账单") "创建" else "保存") }
+            )
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
-        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        textContentColor = colors.onSurface,
-        shape = RoundedCornerShape(28.dp),
+        dismissButton = { AppDialogButton(label = "取消", onClick = onDismiss) }
     )
 
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState(initialSelectedDateMillis = editDate ?: System.currentTimeMillis())
-        DatePickerDialog(
+        AppDatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
-                TextButton(onClick = {
+                AppDialogButton(label = "确定", onClick = {
                     datePickerState.selectedDateMillis?.let {
                         editDate = it.toDayStartMillis(); showDatePicker = false; pendingTime = true
                     }
-                }) { Text("确定") }
+                })
             },
-            dismissButton = { TextButton(onClick = { showDatePicker = false }) { Text("取消") } }
+            dismissButton = { AppDialogButton(label = "取消", onClick = { showDatePicker = false }) }
         ) { DatePicker(state = datePickerState) }
     }
 
@@ -289,26 +286,19 @@ private fun BillFormDialog(
         val timePickerState = rememberTimePickerState(
             initialHour = cal.get(Calendar.HOUR_OF_DAY), initialMinute = cal.get(Calendar.MINUTE), is24Hour = true
         )
-        AlertDialog(
+        AppTimePickerDialog(
             onDismissRequest = { showTimePicker = false },
-            title = { Text("选择时间") },
-            text = { TimePicker(state = timePickerState) },
-            confirmButton = {
-                TextButton(onClick = {
-                    editDate = Calendar.getInstance().apply {
-                        editDate?.let { timeInMillis = it }
-                        set(Calendar.HOUR_OF_DAY, timePickerState.hour)
-                        set(Calendar.MINUTE, timePickerState.minute)
-                        set(Calendar.SECOND, 0)
-                        set(Calendar.MILLISECOND, 0)
-                    }.timeInMillis
-                    showTimePicker = false
-                }) { Text("确定") }
-            },
-            dismissButton = { TextButton(onClick = { showTimePicker = false }) { Text("取消") } },
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            textContentColor = colors.onSurface,
-            shape = RoundedCornerShape(28.dp),
+            content = { TimePicker(state = timePickerState) },
+            onConfirm = {
+                editDate = Calendar.getInstance().apply {
+                    editDate?.let { timeInMillis = it }
+                    set(Calendar.HOUR_OF_DAY, timePickerState.hour)
+                    set(Calendar.MINUTE, timePickerState.minute)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }.timeInMillis
+                showTimePicker = false
+            }
         )
     }
 }
@@ -330,6 +320,7 @@ private fun DateField(
             placeholder = { Text("点击选择时间") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
+            shape = ModalTokens.innerShape,
             colors = OutlinedTextFieldDefaults.colors(
                 disabledTextColor = colors.onSurface,
                 disabledBorderColor = colors.outline,

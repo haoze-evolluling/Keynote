@@ -13,7 +13,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
@@ -26,6 +25,9 @@ import com.haoze.keynote.ui.theme.LocalAppColors
 import com.haoze.keynote.ui.theme.ModalTokens
 import com.haoze.keynote.ui.theme.SpacingTokens
 import com.haoze.keynote.ui.common.ActionMenuDialog
+import com.haoze.keynote.ui.components.AppAlertDialog as AlertDialog
+import com.haoze.keynote.ui.components.AppConfirmDialog
+import com.haoze.keynote.ui.components.AppDialogButton
 import android.content.Intent
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -155,28 +157,21 @@ fun EditNoteScreen(
     }
 
     if (showDeleteDialog) {
-        AlertDialog(
+        AppConfirmDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("删除笔记") },
-            text = { Text("确定要删除这篇笔记吗？删除后可在回收站中恢复。") },
-            confirmButton = {
-                TextButton(onClick = {
-                    hasHandledExit = true; viewModel.deleteNote(); showDeleteDialog = false; onNavigateBack()
-                }) { Text("删除", color = colors.error) }
+            title = "删除笔记",
+            message = "确定要删除这篇笔记吗？删除后可在回收站中恢复。",
+            confirmLabel = "删除",
+            onConfirm = {
+                hasHandledExit = true; viewModel.deleteNote(); showDeleteDialog = false; onNavigateBack()
             },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) { Text("取消") }
-            },
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            textContentColor = colors.onSurface,
-            shape = RoundedCornerShape(28.dp),
+            destructive = true
         )
     }
 
     if (polishedText != null) {
         PolishedTextDialog(
             polishedText = polishedText!!,
-            colors = colors,
             onDismiss = { viewModel.dismissPolishedText() },
             onApply = { viewModel.applyPolishedText() }
         )
@@ -519,11 +514,8 @@ private fun SummaryCard(
             onDismissRequest = { showEditDialog = false },
             title = { Text("编辑摘要") },
             text = { OutlinedTextField(value = editedText, onValueChange = { editedText = it }, modifier = Modifier.fillMaxWidth(), maxLines = 5) },
-            confirmButton = { TextButton(onClick = { onUpdate(editedText); showEditDialog = false }) { Text("保存") } },
-            dismissButton = { TextButton(onClick = { showEditDialog = false }) { Text("取消") } },
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            textContentColor = colors.onSurface,
-            shape = RoundedCornerShape(28.dp),
+            confirmButton = { AppDialogButton("保存", onClick = { onUpdate(editedText); showEditDialog = false }) },
+            dismissButton = { AppDialogButton("取消", onClick = { showEditDialog = false }) }
         )
     }
 }
@@ -531,24 +523,14 @@ private fun SummaryCard(
 @Composable
 private fun PolishedTextDialog(
     polishedText: String,
-    colors: com.haoze.keynote.ui.theme.AppColors,
     onDismiss: () -> Unit,
     onApply: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("AI润色结果") },
-        text = {
-            Box(
-                modifier = Modifier.fillMaxWidth()
-                    .heightIn(max = LocalConfiguration.current.screenHeightDp.dp * 0.6f)
-                    .verticalScroll(rememberScrollState())
-            ) { Text(polishedText) }
-        },
-        confirmButton = { TextButton(onClick = onApply) { Text("替换") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
-        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        textContentColor = colors.onSurface,
-        shape = RoundedCornerShape(28.dp),
+        text = { Text(polishedText) },
+        confirmButton = { AppDialogButton("替换", onApply) },
+        dismissButton = { AppDialogButton("取消", onDismiss) }
     )
 }

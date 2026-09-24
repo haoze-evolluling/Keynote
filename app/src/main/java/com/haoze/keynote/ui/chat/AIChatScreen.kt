@@ -33,7 +33,9 @@ import com.haoze.keynote.ui.theme.DialogContent
 import com.haoze.keynote.ui.theme.LocalAppColors
 import com.haoze.keynote.ui.theme.LocalDarkModeManager
 import com.haoze.keynote.ui.theme.ModalTokens
-import com.haoze.keynote.ui.theme.SpacingTokens
+import com.haoze.keynote.ui.components.AppAlertDialog as AlertDialog
+import com.haoze.keynote.ui.components.AppConfirmDialog
+import com.haoze.keynote.ui.components.AppDialogButton
 import com.haoze.keynote.ui.common.ActionMenuDialog
 import com.haoze.keynote.ui.common.ActionRow
 import kotlinx.coroutines.delay
@@ -283,42 +285,29 @@ fun AIChatScreen(
             }
 
             if (showNewConversationConfirm) {
-                AlertDialog(
+                AppConfirmDialog(
                     onDismissRequest = { showNewConversationConfirm = false },
-                    title = { Text("开始新对话") },
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    textContentColor = colors.onSurface,
-                    shape = RoundedCornerShape(28.dp),
-                    text = { Text("当前对话已自动保存到历史记录。开始新对话后，可以从历史对话继续回来。") },
-                    confirmButton = {
-                        TextButton(onClick = {
-                            viewModel.clearMessages()
-                            showNewConversationConfirm = false
-                        }) { Text("开始新对话") }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showNewConversationConfirm = false }) { Text("取消") }
+                    title = "开始新对话",
+                    message = "当前对话已自动保存到历史记录。开始新对话后，可以从历史对话继续回来。",
+                    confirmLabel = "开始新对话",
+                    onConfirm = {
+                        viewModel.clearMessages()
+                        showNewConversationConfirm = false
                     }
                 )
             }
 
             if (showDeleteConversationConfirm) {
-                AlertDialog(
+                AppConfirmDialog(
                     onDismissRequest = { showDeleteConversationConfirm = false },
-                    title = { Text("删除对话") },
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    textContentColor = colors.onSurface,
-                    shape = RoundedCornerShape(28.dp),
-                    text = { Text("删除后会进入回收站，可在回收站中恢复或永久删除。") },
-                    confirmButton = {
-                        TextButton(onClick = {
-                            viewModel.deleteCurrentConversation()
-                            showDeleteConversationConfirm = false
-                        }) { Text("移入回收站", color = colors.error) }
+                    title = "删除对话",
+                    message = "删除后会进入回收站，可在回收站中恢复或永久删除。",
+                    confirmLabel = "移入回收站",
+                    onConfirm = {
+                        viewModel.deleteCurrentConversation()
+                        showDeleteConversationConfirm = false
                     },
-                    dismissButton = {
-                        TextButton(onClick = { showDeleteConversationConfirm = false }) { Text("取消") }
-                    }
+                    destructive = true
                 )
             }
 
@@ -355,9 +344,6 @@ private fun AIChatHistoryDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("历史对话") },
-        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        textContentColor = colors.onSurface,
-        shape = RoundedCornerShape(28.dp),
         text = {
             DialogContent(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
@@ -365,6 +351,7 @@ private fun AIChatHistoryDialog(
                     onValueChange = { query = it },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
+                    shape = ModalTokens.innerShape,
                     label = { Text("搜索历史对话") },
                     leadingIcon = { Icon(painterResource(R.drawable.ic_search_outlined), contentDescription = null) }
                 )
@@ -375,6 +362,7 @@ private fun AIChatHistoryDialog(
                         color = colors.onSurfaceVariant
                     )
                 } else {
+                    // 高度上限须保留：外层 AppAlertDialog 的滚动会给列表无限高约束，无上限会崩溃
                     LazyColumn(
                         modifier = Modifier.heightIn(max = 360.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -392,7 +380,7 @@ private fun AIChatHistoryDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text("关闭") }
+            AppDialogButton("关闭", onDismiss)
         }
     )
 }
@@ -409,10 +397,11 @@ private fun AIChatHistoryRow(
         assistantUiText(AssistantType.valueOf(conversation.assistantType)).menuLabel
     }.getOrDefault("AI 对话")
 
+    // 条目本身可点击，故用 Surface 而非无点击能力的 ModalInfoCard，但仍共用同一套内嵌块令牌
     Surface(
         onClick = onOpen,
-        shape = RoundedCornerShape(SpacingTokens.listCardRadius),
-        color = colors.surfaceVariant.copy(alpha = 0.5f),
+        shape = ModalTokens.innerShape,
+        color = ModalTokens.innerCardColor,
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -925,9 +914,6 @@ private fun PendingBillDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("确认创建账单") },
-        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        textContentColor = colors.onSurface,
-        shape = RoundedCornerShape(28.dp),
         text = {
             DialogContent(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -960,10 +946,10 @@ private fun PendingBillDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(selectedCategoryId) }) { Text("确认创建") }
+            AppDialogButton("确认创建", onClick = { onConfirm(selectedCategoryId) })
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("取消") }
+            AppDialogButton("取消", onDismiss)
         }
     )
 }

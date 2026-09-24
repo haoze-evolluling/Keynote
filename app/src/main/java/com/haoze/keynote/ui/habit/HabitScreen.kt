@@ -19,11 +19,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
@@ -53,6 +50,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.koin.compose.viewmodel.koinViewModel
 import com.haoze.keynote.data.db.entity.HabitEntity
+import com.haoze.keynote.ui.components.AppAlertDialog as AlertDialog
+import com.haoze.keynote.ui.components.AppConfirmDialog
+import com.haoze.keynote.ui.components.AppDialogButton
 import com.haoze.keynote.ui.components.SettingsDivider
 import com.haoze.keynote.ui.components.SettingsGroup
 import com.haoze.keynote.ui.components.SettingsGroupTitle
@@ -78,7 +78,6 @@ fun HabitScreen(
     onBack: () -> Unit = {},
     viewModel: HabitViewModel = koinViewModel()
 ) {
-    val colors = LocalAppColors.current
     val progressItems by viewModel.progressItems.collectAsState()
     val showEditor by viewModel.showEditor.collectAsState()
     val editingHabit by viewModel.editingHabit.collectAsState()
@@ -146,22 +145,16 @@ fun HabitScreen(
     }
 
     habitToDelete?.let { habit ->
-        AlertDialog(
+        AppConfirmDialog(
             onDismissRequest = { habitToDelete = null },
-            title = { Text("删除习惯") },
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            textContentColor = colors.onSurface,
-            shape = RoundedCornerShape(28.dp),
-            text = { Text("确定要删除「${habit.title}」吗？删除后可在回收站中恢复。") },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.softDeleteHabit(habit.id)
-                    habitToDelete = null
-                }) { Text("删除", color = colors.error) }
-            },
-            dismissButton = {
-                TextButton(onClick = { habitToDelete = null }) { Text("取消") }
-            },
+            title = "删除习惯",
+            message = "确定要删除「${habit.title}」吗？删除后可在回收站中恢复。",
+            confirmLabel = "删除",
+            destructive = true,
+            onConfirm = {
+                viewModel.softDeleteHabit(habit.id)
+                habitToDelete = null
+            }
         )
     }
 }
@@ -351,14 +344,9 @@ private fun HabitEditorDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(if (habit == null) "新建习惯" else "编辑习惯") },
-        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        textContentColor = colors.onSurface,
-        shape = RoundedCornerShape(28.dp),
         text = {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
+                modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 OutlinedTextField(
@@ -366,12 +354,14 @@ private fun HabitEditorDialog(
                     onValueChange = { title = it },
                     label = { Text("习惯名称") },
                     singleLine = true,
+                    shape = ModalTokens.innerShape,
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
                     label = { Text("备注") },
+                    shape = ModalTokens.innerShape,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(84.dp),
@@ -416,13 +406,14 @@ private fun HabitEditorDialog(
             }
         },
         confirmButton = {
-            TextButton(
+            AppDialogButton(
+                label = "保存",
                 onClick = { onSave(title, description, targetDays, selectedColor) },
                 enabled = title.isNotBlank()
-            ) { Text("保存") }
+            )
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("取消") }
+            AppDialogButton(label = "取消", onClick = onDismiss)
         },
     )
 }

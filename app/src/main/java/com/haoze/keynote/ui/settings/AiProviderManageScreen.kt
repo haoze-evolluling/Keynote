@@ -9,14 +9,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,7 +27,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.haoze.keynote.R
 import com.haoze.keynote.data.remote.AiProvider
-import com.haoze.keynote.ui.components.SettingsCornerShape
+import com.haoze.keynote.ui.components.AppAlertDialog as AlertDialog
+import com.haoze.keynote.ui.components.AppConfirmDialog
+import com.haoze.keynote.ui.components.AppDialogButton
 import com.haoze.keynote.ui.components.SettingsDivider
 import com.haoze.keynote.ui.components.SettingsGroup
 import com.haoze.keynote.ui.components.SettingsGroupTitle
@@ -38,6 +37,7 @@ import com.haoze.keynote.ui.components.SettingsInfoText
 import com.haoze.keynote.ui.components.SettingsItem
 import com.haoze.keynote.ui.components.SettingsScaffold
 import com.haoze.keynote.ui.theme.DialogContent
+import com.haoze.keynote.ui.theme.ModalTokens
 
 @Composable
 fun AiProviderManageScreen(
@@ -105,27 +105,16 @@ fun AiProviderManageScreen(
     }
 
     pendingDelete?.let { provider ->
-        AlertDialog(
+        AppConfirmDialog(
             onDismissRequest = { pendingDelete = null },
-            title = { Text("删除厂商") },
-            text = { Text("确定要删除“${provider.name}”吗？相关 API Key 也会从本机移除。") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onDeleteProvider(provider.id)
-                        pendingDelete = null
-                    }
-                ) {
-                    Text("删除", color = MaterialTheme.colorScheme.error)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { pendingDelete = null }) {
-                    Text("取消")
-                }
-            },
-            shape = RoundedCornerShape(28.dp),
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+            title = "删除厂商",
+            message = "确定要删除“${provider.name}”吗？相关 API Key 也会从本机移除。",
+            confirmLabel = "删除",
+            destructive = true,
+            onConfirm = {
+                onDeleteProvider(provider.id)
+                pendingDelete = null
+            }
         )
     }
 
@@ -231,8 +220,6 @@ private fun ProviderEditDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(if (isNewMode) "添加自定义厂商" else "编辑厂商") },
-        shape = RoundedCornerShape(28.dp),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         text = {
             DialogContent(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
@@ -240,7 +227,7 @@ private fun ProviderEditDialog(
                     onValueChange = { name = it },
                     label = { Text("厂商名称") },
                     singleLine = true,
-                    shape = SettingsCornerShape,
+                    shape = ModalTokens.innerShape,
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
@@ -248,7 +235,7 @@ private fun ProviderEditDialog(
                     onValueChange = { baseUrl = it },
                     label = { Text("基础地址") },
                     singleLine = true,
-                    shape = SettingsCornerShape,
+                    shape = ModalTokens.innerShape,
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text("https://api.example.com/v1") }
                 )
@@ -257,7 +244,7 @@ private fun ProviderEditDialog(
                     onValueChange = { modelName = it },
                     label = { Text("模型名称") },
                     singleLine = true,
-                    shape = SettingsCornerShape,
+                    shape = ModalTokens.innerShape,
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
@@ -265,7 +252,7 @@ private fun ProviderEditDialog(
                     onValueChange = { apiKey = it },
                     label = { Text("API Key") },
                     singleLine = true,
-                    shape = SettingsCornerShape,
+                    shape = ModalTokens.innerShape,
                     modifier = Modifier.fillMaxWidth(),
                     visualTransformation = if (showKey) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
@@ -280,17 +267,14 @@ private fun ProviderEditDialog(
             }
         },
         confirmButton = {
-            TextButton(
+            AppDialogButton(
+                label = "保存",
                 onClick = { onSave(name.trim(), baseUrl.trim(), modelName.trim(), apiKey) },
                 enabled = name.isNotBlank() && baseUrl.isNotBlank()
-            ) {
-                Text("保存")
-            }
+            )
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消")
-            }
+            AppDialogButton(label = "取消", onClick = onDismiss)
         }
     )
 }
