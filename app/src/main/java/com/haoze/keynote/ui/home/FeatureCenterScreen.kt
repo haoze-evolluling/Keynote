@@ -25,6 +25,7 @@ import com.haoze.keynote.ui.components.SettingsDivider
 import com.haoze.keynote.ui.components.SettingsGroup
 import com.haoze.keynote.ui.components.SettingsGroupTitle
 import com.haoze.keynote.ui.components.SettingsNavigationItem
+import com.haoze.keynote.ui.components.ModalMenuGroup
 import com.haoze.keynote.ui.components.SettingsScaffold
 import com.haoze.keynote.ui.navigation.Screen
 
@@ -179,16 +180,21 @@ fun FeatureCenterScreen(
                     modifier = Modifier.padding(vertical = 10.dp)
                 )
             } else {
-                tags.forEach { tag ->
-                    ActionRow(
-                        icon = painterResource(R.drawable.ic_label),
-                        label = "#${tag.name}",
-                        onClick = {
-                            showTagDialog = false
-                            onNavigateToTag(tag.id, tag.name)
+                ModalMenuGroup(
+                    items = tags.map { tag ->
+                        val label = "#${tag.name}"
+                        {
+                            ActionRow(
+                                icon = painterResource(R.drawable.ic_label),
+                                label = label,
+                                onClick = {
+                                    showTagDialog = false
+                                    onNavigateToTag(tag.id, tag.name)
+                                }
+                            )
                         }
-                    )
-                }
+                    }
+                )
             }
         }
     }

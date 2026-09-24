@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
@@ -34,6 +35,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalConfiguration
@@ -168,6 +170,55 @@ fun ModalInfoCard(
             content = content
         )
     }
+}
+
+/**
+ * 谛听式菜单条目组：每行是一块独立的实底圆角卡片，行间留 2dp 缝隙，
+ * 首行只圆上角、末行只圆下角、中间行四角近乎直角，使整组读作一张被切分的卡片。
+ * 条目数决定末行圆角，因此这里收 List<composable> 而不是开放 ColumnScope。
+ */
+@Composable
+fun ModalMenuGroup(
+    items: List<@Composable () -> Unit>,
+    modifier: Modifier = Modifier
+) {
+    if (items.isEmpty()) return
+    val rowColor = ModalTokens.menuRowColor
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(ModalTokens.menuItemSpacing)
+    ) {
+        items.forEachIndexed { index, item ->
+            ModalMenuCard(index = index, itemCount = items.size, containerColor = rowColor, content = item)
+        }
+    }
+}
+
+/** 菜单分组之间的 12dp 留白。 */
+@Composable
+fun ModalMenuSectionGap() {
+    Spacer(modifier = Modifier.height(ModalTokens.menuSectionSpacing))
+}
+
+/** 单条菜单卡片：按在组内的位置决定上下圆角。 */
+@Composable
+private fun ModalMenuCard(
+    index: Int,
+    itemCount: Int,
+    containerColor: Color,
+    content: @Composable () -> Unit
+) {
+    val outer = ModalTokens.menuOuterRadius
+    val inner = ModalTokens.menuInnerRadius
+    val top = if (index == 0) outer else inner
+    val bottom = if (index == itemCount - 1) outer else inner
+    val shape = RoundedCornerShape(topStart = top, topEnd = top, bottomStart = bottom, bottomEnd = bottom)
+    Surface(
+        modifier = Modifier.fillMaxWidth().clip(shape),
+        shape = shape,
+        color = containerColor,
+        content = content
+    )
 }
 
 /** 底部抽屉标题栏：圆形 primaryContainer 图标徽标 + 标题/副标题 + 关闭键 + 一条发丝分割线。 */

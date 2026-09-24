@@ -22,12 +22,13 @@ import com.haoze.keynote.viewmodel.EditNoteViewModel
 import kotlinx.coroutines.launch
 import com.haoze.keynote.ui.common.ActionRow
 import com.haoze.keynote.ui.theme.LocalAppColors
-import com.haoze.keynote.ui.theme.ModalTokens
 import com.haoze.keynote.ui.theme.SpacingTokens
 import com.haoze.keynote.ui.common.ActionMenuDialog
 import com.haoze.keynote.ui.components.AppAlertDialog as AlertDialog
 import com.haoze.keynote.ui.components.AppConfirmDialog
 import com.haoze.keynote.ui.components.AppDialogButton
+import com.haoze.keynote.ui.components.ModalMenuGroup
+import com.haoze.keynote.ui.components.ModalMenuSectionGap
 import android.content.Intent
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -268,57 +269,87 @@ private fun EditNoteMoreDialog(
 ) {
     ActionMenuDialog(title = "更多操作", onDismiss = onDismiss) {
         // 编辑操作组
-        ActionRow(
-            icon = painterResource(R.drawable.ic_save),
-            label = "保存",
-            onClick = { onSave(); onDismiss() }
+        ModalMenuGroup(
+            items = buildList {
+                add {
+                    ActionRow(
+                        icon = painterResource(R.drawable.ic_save),
+                        label = "保存",
+                        onClick = { onSave(); onDismiss() }
+                    )
+                }
+                add {
+                    ActionRow(
+                        icon = painterResource(R.drawable.ic_undo),
+                        label = "撤回",
+                        onClick = { onUndo(); onDismiss() },
+                        enabled = canUndo
+                    )
+                }
+            }
         )
-        ActionRow(
-            icon = painterResource(R.drawable.ic_undo),
-            label = "撤回",
-            onClick = { onUndo(); onDismiss() },
-            enabled = canUndo
-        )
-        HorizontalDivider(modifier = Modifier.padding(vertical = ModalTokens.menuDividerPaddingVertical))
         // 分享操作组
-        ActionRow(
-            icon = painterResource(R.drawable.ic_share),
-            label = "分享",
-            onClick = { onShare(); onDismiss() }
+        ModalMenuSectionGap()
+        ModalMenuGroup(
+            items = buildList {
+                add {
+                    ActionRow(
+                        icon = painterResource(R.drawable.ic_share),
+                        label = "分享",
+                        onClick = { onShare(); onDismiss() }
+                    )
+                }
+            }
         )
-        HorizontalDivider(modifier = Modifier.padding(vertical = ModalTokens.menuDividerPaddingVertical))
         // AI功能组
-        ActionRow(
-            icon = painterResource(R.drawable.ic_auto_awesome),
-            label = "AI摘要",
-            onClick = { onSummarize(); onDismiss() },
-            enabled = !isSummarizing && !isPreview,
-            isLoading = isSummarizing,
-            loadingLabel = "摘要生成中..."
+        ModalMenuSectionGap()
+        ModalMenuGroup(
+            items = buildList {
+                add {
+                    ActionRow(
+                        icon = painterResource(R.drawable.ic_auto_awesome),
+                        label = "AI摘要",
+                        onClick = { onSummarize(); onDismiss() },
+                        enabled = !isSummarizing && !isPreview,
+                        isLoading = isSummarizing,
+                        loadingLabel = "摘要生成中..."
+                    )
+                }
+                add {
+                    ActionRow(
+                        icon = painterResource(R.drawable.ic_label),
+                        label = "AI标签",
+                        onClick = { onGenerateTags(); onDismiss() },
+                        enabled = !isGenerating && !isPreview,
+                        isLoading = isGenerating,
+                        loadingLabel = "标签生成中..."
+                    )
+                }
+                add {
+                    ActionRow(
+                        icon = painterResource(R.drawable.ic_auto_awesome),
+                        label = "AI润色",
+                        onClick = { onPolish(); onDismiss() },
+                        enabled = !isPolishing && !isPreview,
+                        isLoading = isPolishing,
+                        loadingLabel = "润色中..."
+                    )
+                }
+            }
         )
-        ActionRow(
-            icon = painterResource(R.drawable.ic_label),
-            label = "AI标签",
-            onClick = { onGenerateTags(); onDismiss() },
-            enabled = !isGenerating && !isPreview,
-            isLoading = isGenerating,
-            loadingLabel = "标签生成中..."
-        )
-        ActionRow(
-            icon = painterResource(R.drawable.ic_auto_awesome),
-            label = "AI润色",
-            onClick = { onPolish(); onDismiss() },
-            enabled = !isPolishing && !isPreview,
-            isLoading = isPolishing,
-            loadingLabel = "润色中..."
-        )
-        HorizontalDivider(modifier = Modifier.padding(vertical = ModalTokens.menuDividerPaddingVertical))
         // 危险操作组
-        ActionRow(
-            icon = painterResource(R.drawable.ic_delete),
-            label = "删除",
-            onClick = { onDelete(); onDismiss() },
-            isDestructive = true
+        ModalMenuSectionGap()
+        ModalMenuGroup(
+            items = buildList {
+                add {
+                    ActionRow(
+                        icon = painterResource(R.drawable.ic_delete),
+                        label = "删除",
+                        onClick = { onDelete(); onDismiss() },
+                        isDestructive = true
+                    )
+                }
+            }
         )
     }
 }

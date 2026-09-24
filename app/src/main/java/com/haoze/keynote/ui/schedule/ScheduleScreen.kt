@@ -34,6 +34,8 @@ import com.haoze.keynote.ui.components.AppConfirmDialog
 import com.haoze.keynote.ui.components.AppDatePickerDialog
 import com.haoze.keynote.ui.components.AppDialogButton
 import com.haoze.keynote.ui.components.AppTimePickerDialog
+import com.haoze.keynote.ui.components.ModalMenuGroup
+import com.haoze.keynote.ui.components.ModalMenuSectionGap
 import com.haoze.keynote.ui.components.SettingsDivider
 import com.haoze.keynote.ui.components.SettingsGroup
 import com.haoze.keynote.ui.components.SettingsGroupTitle
@@ -172,32 +174,52 @@ fun ScheduleScreen(
                 title = currentSchedule.title,
                 onDismiss = { showActionDialogForSchedule = null }
             ) {
-                        ActionRow(icon = painterResource(R.drawable.ic_edit), label = "编辑日程", onClick = {
-                            showEditDialogForSchedule = currentSchedule
-                            showActionDialogForSchedule = null
-                        })
-                        if (hasLink) {
-                            ActionRow(icon = painterResource(R.drawable.ic_link_off), label = "取消关联笔记", onClick = {
-                                viewModel.unlinkNote(currentSchedule.id)
-                                showActionDialogForSchedule = null
-                            })
-                        } else {
-                            ActionRow(icon = painterResource(R.drawable.ic_link), label = "关联笔记", onClick = {
-                                showLinkNoteDialog = currentSchedule.id
+                ModalMenuGroup(
+                    items = buildList {
+                        add {
+                            ActionRow(icon = painterResource(R.drawable.ic_edit), label = "编辑日程", onClick = {
+                                showEditDialogForSchedule = currentSchedule
                                 showActionDialogForSchedule = null
                             })
                         }
-                        HorizontalDivider(modifier = Modifier.padding(vertical = ModalTokens.menuDividerPaddingVertical))
-                        ActionRow(icon = painterResource(R.drawable.ic_auto_awesome), label = if (isGeneratingNote) "生成中..." else "AI 生成笔记", onClick = {
-                            pendingAiScheduleId = currentSchedule.id
-                            viewModel.aiGenerateNote(currentSchedule.id)
-                            showActionDialogForSchedule = null
-                        })
-                        HorizontalDivider(modifier = Modifier.padding(vertical = ModalTokens.menuDividerPaddingVertical))
-                        ActionRow(icon = painterResource(R.drawable.ic_delete), label = "删除日程", isDestructive = true, onClick = {
-                            showDeleteConfirm = currentSchedule
-                            showActionDialogForSchedule = null
-                        })
+                        add {
+                            if (hasLink) {
+                                ActionRow(icon = painterResource(R.drawable.ic_link_off), label = "取消关联笔记", onClick = {
+                                    viewModel.unlinkNote(currentSchedule.id)
+                                    showActionDialogForSchedule = null
+                                })
+                            } else {
+                                ActionRow(icon = painterResource(R.drawable.ic_link), label = "关联笔记", showsChevron = true, onClick = {
+                                    showLinkNoteDialog = currentSchedule.id
+                                    showActionDialogForSchedule = null
+                                })
+                            }
+                        }
+                    }
+                )
+                ModalMenuSectionGap()
+                ModalMenuGroup(
+                    items = buildList {
+                        add {
+                            ActionRow(icon = painterResource(R.drawable.ic_auto_awesome), label = if (isGeneratingNote) "生成中..." else "AI 生成笔记", onClick = {
+                                pendingAiScheduleId = currentSchedule.id
+                                viewModel.aiGenerateNote(currentSchedule.id)
+                                showActionDialogForSchedule = null
+                            })
+                        }
+                    }
+                )
+                ModalMenuSectionGap()
+                ModalMenuGroup(
+                    items = buildList {
+                        add {
+                            ActionRow(icon = painterResource(R.drawable.ic_delete), label = "删除日程", isDestructive = true, onClick = {
+                                showDeleteConfirm = currentSchedule
+                                showActionDialogForSchedule = null
+                            })
+                        }
+                    }
+                )
             }
         }
     }

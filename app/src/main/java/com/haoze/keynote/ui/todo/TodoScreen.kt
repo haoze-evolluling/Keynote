@@ -32,6 +32,8 @@ import com.haoze.keynote.ui.components.AppAlertDialog as AlertDialog
 import com.haoze.keynote.ui.components.AppDatePickerDialog as DatePickerDialog
 import com.haoze.keynote.ui.components.AppDialogButton
 import com.haoze.keynote.ui.components.AppTimePickerDialog
+import com.haoze.keynote.ui.components.ModalMenuGroup
+import com.haoze.keynote.ui.components.ModalMenuSectionGap
 import com.haoze.keynote.ui.theme.ModalTokens
 import com.haoze.keynote.ui.theme.LocalAppColors
 import com.haoze.keynote.util.toDayStartMillis
@@ -291,14 +293,30 @@ private fun TodoActionBottomSheet(
     onToggleComplete: () -> Unit
 ) {
     ActionMenuDialog(title = "待办操作", onDismiss = onDismiss) {
-        ActionRow(painterResource(R.drawable.ic_edit), "编辑", onEdit)
-        ActionRow(
-            painterResource(R.drawable.ic_done),
-            if (todo.isCompleted) "标记未完成" else "标记完成",
-            onToggleComplete
+        ModalMenuGroup(
+            items = buildList {
+                add { ActionRow(painterResource(R.drawable.ic_edit), "编辑", onClick = onEdit) }
+                add {
+                    ActionRow(
+                        painterResource(R.drawable.ic_done),
+                        if (todo.isCompleted) "标记未完成" else "标记完成",
+                        onClick = onToggleComplete
+                    )
+                }
+            }
         )
-        HorizontalDivider(modifier = Modifier.padding(vertical = ModalTokens.menuDividerPaddingVertical))
-        ActionRow(painterResource(R.drawable.ic_delete), "删除", onDelete, isDestructive = true)
+        ModalMenuSectionGap()
+        ModalMenuGroup(
+            items = buildList {
+                add {
+                    ActionRow(
+                        painterResource(R.drawable.ic_delete), "删除",
+                        isDestructive = true,
+                        onClick = onDelete
+                    )
+                }
+            }
+        )
     }
 }
 
@@ -411,35 +429,55 @@ private fun TodoDialog(
 
                 if (categories.isNotEmpty()) {
                     val selectedCat = categories.find { it.id == categoryId }
-                    ExposedDropdownMenuBox(
-                        expanded = categoryExpanded,
-                        onExpandedChange = { categoryExpanded = it }
-                    ) {
+                    // 只读输入框自己会吃掉点击，故用同尺寸覆盖层承接开菜单的手势（与谛听选择器同法）
+                    Box(modifier = Modifier.fillMaxWidth()) {
                         OutlinedTextField(
                             value = selectedCat?.name ?: "无分类",
                             onValueChange = {},
                             readOnly = true,
                             label = { Text("分类") },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(categoryExpanded) },
+                            trailingIcon = {
+                                Icon(painterResource(R.drawable.ic_arrow_drop_down), contentDescription = null)
+                            },
                             shape = ModalTokens.innerShape,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .menuAnchor()
+                            modifier = Modifier.fillMaxWidth()
                         )
-                        ExposedDropdownMenu(
-                            expanded = categoryExpanded,
-                            onDismissRequest = { categoryExpanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("无分类") },
-                                onClick = { categoryId = null; categoryExpanded = false }
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .clickable(onClickLabel = "选择分类") { categoryExpanded = true }
+                        )
+                    }
+                    if (categoryExpanded) {
+                        ActionMenuDialog(title = "选择分类", onDismiss = { categoryExpanded = false }) {
+                            ModalMenuGroup(
+                                items = buildList {
+                                    add {
+                                        ActionRow(
+                                            painterResource(R.drawable.ic_label), "无分类",
+                                            selected = categoryId == null,
+                                            onClick = {
+                                                categoryId = null
+                                                categoryExpanded = false
+                                            }
+                                        )
+                                    }
+                                    addAll(categories.map { cat ->
+                                        val pickedId = cat.id
+                                        val pickedName = cat.name
+                                        {
+                                            ActionRow(
+                                                painterResource(R.drawable.ic_label), pickedName,
+                                                selected = categoryId == pickedId,
+                                                onClick = {
+                                                    categoryId = pickedId
+                                                    categoryExpanded = false
+                                                }
+                                            )
+                                        }
+                                    })
+                                }
                             )
-                            categories.forEach { cat ->
-                                DropdownMenuItem(
-                                    text = { Text(cat.name) },
-                                    onClick = { categoryId = cat.id; categoryExpanded = false }
-                                )
-                            }
                         }
                     }
                 }

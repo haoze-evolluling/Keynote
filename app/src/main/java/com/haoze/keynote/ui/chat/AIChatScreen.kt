@@ -36,6 +36,7 @@ import com.haoze.keynote.ui.theme.ModalTokens
 import com.haoze.keynote.ui.components.AppAlertDialog as AlertDialog
 import com.haoze.keynote.ui.components.AppConfirmDialog
 import com.haoze.keynote.ui.components.AppDialogButton
+import com.haoze.keynote.ui.components.ModalMenuGroup
 import com.haoze.keynote.ui.common.ActionMenuDialog
 import com.haoze.keynote.ui.common.ActionRow
 import kotlinx.coroutines.delay
@@ -171,44 +172,84 @@ fun AIChatScreen(
 
                 if (assistantMenuExpanded) {
                     ActionMenuDialog(title = "切换助手", onDismiss = { assistantMenuExpanded = false }) {
-                        listOf(AssistantType.CHAT, AssistantType.BILL, AssistantType.PLANNER).forEach { type ->
-                            ActionRow(
-                                icon = painterResource(if (type == currentAssistant) R.drawable.ic_check else R.drawable.ic_auto_awesome),
-                                label = assistantUiText(type).menuLabel,
-                                onClick = {
-                                    viewModel.switchAssistant(type)
-                                    assistantMenuExpanded = false
+                        ModalMenuGroup(
+                            items = listOf(AssistantType.CHAT, AssistantType.BILL, AssistantType.PLANNER).map { type ->
+                                val isSelected = type == currentAssistant
+                                val label = assistantUiText(type).menuLabel
+                                {
+                                    ActionRow(
+                                        icon = painterResource(R.drawable.ic_auto_awesome),
+                                        label = label,
+                                        selected = isSelected,
+                                        onClick = {
+                                            viewModel.switchAssistant(type)
+                                            assistantMenuExpanded = false
+                                        }
+                                    )
                                 }
-                            )
-                        }
+                            }
+                        )
                     }
                 }
 
                 if (actionsMenuExpanded) {
                     ActionMenuDialog(title = "更多操作", onDismiss = { actionsMenuExpanded = false }) {
-                        ActionRow(painterResource(R.drawable.ic_history_outlined), "历史对话", {
-                            actionsMenuExpanded = false
-                            showHistoryDialog = true
-                        })
-                        if (messages.isNotEmpty()) {
-                            ActionRow(painterResource(R.drawable.ic_edit_outlined), "保存对话", {
-                                actionsMenuExpanded = false
-                                isCreatingNote = true
-                                viewModel.createNoteFromMessages()
-                            }, enabled = !isCreatingNote)
-                            ActionRow(painterResource(R.drawable.ic_delete_outlined), "删除对话", {
-                                actionsMenuExpanded = false
-                                showDeleteConversationConfirm = true
-                            }, isDestructive = true)
-                        }
-                        ActionRow(painterResource(R.drawable.ic_refresh_outlined), "重新生成", {
-                            actionsMenuExpanded = false
-                            viewModel.regenerateLastResponse()
-                        }, enabled = !isLoading && messages.any { it.role == "user" })
-                        ActionRow(painterResource(R.drawable.ic_chat_outlined_mirrored), "新对话", {
-                            actionsMenuExpanded = false
-                            if (messages.isEmpty()) viewModel.clearMessages() else showNewConversationConfirm = true
-                        })
+                        ModalMenuGroup(
+                            items = buildList {
+                                add {
+                                    ActionRow(
+                                        painterResource(R.drawable.ic_history_outlined), "历史对话",
+                                        showsChevron = true,
+                                        onClick = {
+                                            actionsMenuExpanded = false
+                                            showHistoryDialog = true
+                                        }
+                                    )
+                                }
+                                if (messages.isNotEmpty()) {
+                                    add {
+                                        ActionRow(
+                                            painterResource(R.drawable.ic_edit_outlined), "保存对话",
+                                            enabled = !isCreatingNote,
+                                            onClick = {
+                                                actionsMenuExpanded = false
+                                                isCreatingNote = true
+                                                viewModel.createNoteFromMessages()
+                                            }
+                                        )
+                                    }
+                                    add {
+                                        ActionRow(
+                                            painterResource(R.drawable.ic_delete_outlined), "删除对话",
+                                            isDestructive = true,
+                                            onClick = {
+                                                actionsMenuExpanded = false
+                                                showDeleteConversationConfirm = true
+                                            }
+                                        )
+                                    }
+                                }
+                                add {
+                                    ActionRow(
+                                        painterResource(R.drawable.ic_refresh_outlined), "重新生成",
+                                        enabled = !isLoading && messages.any { it.role == "user" },
+                                        onClick = {
+                                            actionsMenuExpanded = false
+                                            viewModel.regenerateLastResponse()
+                                        }
+                                    )
+                                }
+                                add {
+                                    ActionRow(
+                                        painterResource(R.drawable.ic_chat_outlined_mirrored), "新对话",
+                                        onClick = {
+                                            actionsMenuExpanded = false
+                                            if (messages.isEmpty()) viewModel.clearMessages() else showNewConversationConfirm = true
+                                        }
+                                    )
+                                }
+                            }
+                        )
                     }
                 }
             }

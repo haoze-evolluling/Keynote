@@ -26,9 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.graphics.lerp
-import androidx.core.graphics.ColorUtils
 import androidx.compose.ui.platform.LocalContext
 import android.os.Build
 
@@ -118,36 +115,6 @@ private val FallbackDarkScheme = darkColorScheme(
     surfaceContainerLowest = Color(0xFF0F0D13), surfaceContainerLow = Color(0xFF1C1B1F), surfaceContainer = Color(0xFF201F23), surfaceContainerHigh = Color(0xFF2B2930), surfaceContainerHighest = Color(0xFF36343B)
 )
 
-/**
- * 基于 Material 3 ColorScheme，在保留系统动态取色（壁纸提取）与主题色相一致的前提下，
- * 降低模态框背景颜色的饱和度与视觉重量，营造轻盈、浅淡且柔和的现代卡片质感。
- */
-fun ColorScheme.toModalContainerColor(darkTheme: Boolean): Color {
-    val baseColor = surfaceContainerHigh
-    val hsl = FloatArray(3)
-    ColorUtils.colorToHSL(baseColor.toArgb(), hsl)
-    return if (darkTheme) {
-        // 深色模式：色相保持一致，降低饱和度约 55%，微调明度使其温润内敛，避免生硬对比
-        hsl[1] = (hsl[1] * 0.45f).coerceIn(0f, 1f)
-        hsl[2] = (hsl[2] * 0.95f).coerceIn(0.11f, 0.16f)
-        Color(ColorUtils.HSLToColor(hsl))
-    } else {
-        // 浅色模式：色相保持一致，饱和度大幅降低约 70%，明度提升至 ~97.8%，消解原有的深灰厚重感
-        hsl[1] = (hsl[1] * 0.30f).coerceIn(0f, 1f)
-        hsl[2] = (hsl[2] + (1.0f - hsl[2]) * 0.72f).coerceIn(0f, 0.985f)
-        Color(ColorUtils.HSLToColor(hsl))
-    }
-}
-
-fun ColorScheme.toModalSheetContainerColor(darkTheme: Boolean): Color {
-    val modalContainer = toModalContainerColor(darkTheme)
-    return if (darkTheme) {
-        lerp(modalContainer, surface, 0.2f)
-    } else {
-        lerp(modalContainer, surfaceContainerLowest, 0.2f)
-    }
-}
-
 fun ColorScheme.toAppColors(darkTheme: Boolean) = AppColors(
     primary, onPrimary, primaryContainer, onPrimaryContainer, secondary, onSecondary, secondaryContainer, onSecondaryContainer,
     surface, onSurface, surfaceVariant, onSurfaceVariant, error, onError, errorContainer, onErrorContainer, tertiary, onTertiary,
@@ -197,14 +164,13 @@ object SpacingTokens {
 /**
  * 模态框设计令牌（对齐「谛听」设计语言）：所有 Dialog / Bottom Sheet 的圆角、底色、内嵌块
  * 圆角都只从这里取值，页面代码不再各自传 shape 与 containerColor。
- * 对话框走 surfaceContainerHigh（3dp 色调高度），抽屉走 surfaceContainerLow（6dp），
- * 两者的浅淡色差由 KeyNoteTheme 里 toModalContainerColor / toModalSheetContainerColor 提供。
+ * 底色直接采用 M3 动态取色的表面层级：对话框 surfaceContainerHigh、抽屉 surfaceContainerLow、
+ * 菜单条目 surfaceVariant，三者色相一致而明度逐档拉开，不再额外做降饱和处理。
  */
 object ModalTokens {
     val titleTextStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.SemiBold, lineHeight = 24.sp)
     val bodyTextStyle = TextStyle(fontSize = 14.sp, lineHeight = 20.sp)
     val labelTextStyle = TextStyle(fontSize = 12.sp, lineHeight = 16.sp)
-    val menuDividerPaddingVertical = 4.dp
 
     /** 对话框外壳：28dp 全圆角，与列表卡片同档 */
     val dialogShape: Shape
@@ -236,6 +202,32 @@ object ModalTokens {
 
     /** 内容区高度上限（占屏高比例），超出部分由 AppAlertDialog 内部滚动 */
     const val maxHeightFraction = 0.8f
+
+    // ── 谛听式菜单条目（对应 SettingsSurfaceGroup / SettingsItem） ──────────────
+
+    /** 菜单条目底色：谛听在对话框内用不透明 surfaceVariant，使每行读作一块实心卡片 */
+    val menuRowColor: Color
+        @Composable
+        get() = MaterialTheme.colorScheme.surfaceVariant
+
+    /** 组内条目间距（SettingsItemSpacing） */
+    val menuItemSpacing = 2.dp
+
+    /** 分组之间的留白（SettingsSectionSpacing） */
+    val menuSectionSpacing = 12.dp
+
+    /** 首行上角 / 末行下角的外壳圆角，与对话框外壳同档 */
+    val menuOuterRadius = 28.dp
+
+    /** 相邻行相接处的内角圆角 */
+    val menuInnerRadius = 4.dp
+
+    /** 条目内边距与最小高度，与谛听 SettingsItem 同档 */
+    val menuRowHorizontalPadding = 24.dp
+    val menuRowVerticalPadding = 16.dp
+    val menuRowMinHeight = 44.dp
+    val menuRowIconSize = 24.dp
+    val menuRowElementSpacing = 12.dp
 }
 
 val Typography = Typography(
@@ -276,18 +268,12 @@ fun KeyNoteTheme(
 ) {
     val darkTheme = darkModeManager.isDarkMode()
     val context = LocalContext.current
-    val baseColorScheme = when {
+    val colorScheme = when {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && darkTheme -> dynamicDarkColorScheme(context)
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> dynamicLightColorScheme(context)
         darkTheme -> FallbackDarkScheme
         else -> FallbackLightScheme
     }
-    val modalContainer = baseColorScheme.toModalContainerColor(darkTheme)
-    val modalSheetContainer = baseColorScheme.toModalSheetContainerColor(darkTheme)
-    val colorScheme = baseColorScheme.copy(
-        surfaceContainerHigh = modalContainer,
-        surfaceContainerLow = modalSheetContainer
-    )
     val colors = colorScheme.toAppColors(darkTheme)
 
     CompositionLocalProvider(
