@@ -90,7 +90,7 @@ fun SettingsScaffold(
                     }
                 },
                 actions = { actions() },
-                colors = TopAppBarDefaults.largeTopAppBarColors(
+                colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
                     scrolledContainerColor = Color.Transparent
                 ),

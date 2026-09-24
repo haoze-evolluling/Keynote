@@ -6,10 +6,11 @@ import com.haoze.keynote.data.db.entity.NoteWithTags
 import com.haoze.keynote.data.repository.NoteRepository
 import com.haoze.keynote.util.AppConstants
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class HomeViewModel(
     private val repository: NoteRepository
 ) : ViewModel() {
