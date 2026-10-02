@@ -40,6 +40,7 @@
         <activity android:name=".BillActivity" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".BillStatsActivity" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".AaSplitActivity" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".TreatBalanceActivity" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".HabitActivity" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".SettingsActivity" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".AiProviderManageActivity" android:windowSoftInputMode="adjustResize" />

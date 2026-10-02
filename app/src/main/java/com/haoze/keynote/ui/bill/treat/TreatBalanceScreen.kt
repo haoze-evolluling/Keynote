@@ -75,15 +75,15 @@ fun TreatBalanceScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 88.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            contentPadding = PaddingValues(top = 8.dp, bottom = 88.dp)
         ) {
             // 1. 概览平衡卡片
             item {
                 summary?.let { sum ->
                     TreatBalanceHeaderCard(
                         summary = sum,
-                        onSwitchLedger = { showLedgerManageSheet = true }
+                        onSwitchLedger = { showLedgerManageSheet = true },
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
                     )
                 }
             }
@@ -93,7 +93,8 @@ fun TreatBalanceScreen(
                 summary?.let { sum ->
                     TreatSuggestionCard(
                         summary = sum,
-                        onSettleClick = { showSettleConfirm = true }
+                        onSettleClick = { showSettleConfirm = true },
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
                     )
                 }
             }
@@ -105,7 +106,7 @@ fun TreatBalanceScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 36.dp),
+                            .padding(horizontal = 16.dp, vertical = 36.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(

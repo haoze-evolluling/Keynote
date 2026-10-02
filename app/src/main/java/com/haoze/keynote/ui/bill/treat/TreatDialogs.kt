@@ -85,8 +85,7 @@ fun TreatRecordFormDialog(
         title = { Text(if (initialRecord == null) "记一笔请客" else "编辑请客记录") },
         text = {
             DialogContent(
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                modifier = Modifier.verticalScroll(rememberScrollState())
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 // 谁请客选择器
                 Text("请客方", style = ModalTokens.labelTextStyle, color = colors.onSurfaceVariant)

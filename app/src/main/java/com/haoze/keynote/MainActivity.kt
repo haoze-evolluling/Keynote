@@ -99,6 +99,7 @@ abstract class KeyNotePageActivity : ComponentActivity() {
                 Screen.Bill.route -> BillActivity::class.java
                 Screen.BillStats.route -> BillStatsActivity::class.java
                 Screen.AaSplit.route -> AaSplitActivity::class.java
+                Screen.TreatBalance.route -> TreatBalanceActivity::class.java
                 Screen.Habit.route -> HabitActivity::class.java
                 Screen.Settings.route -> SettingsActivity::class.java
                 Screen.AiProviderManage.route -> AiProviderManageActivity::class.java
@@ -127,6 +128,7 @@ class EditNoteActivity : KeyNotePageActivity() { override val screen = Screen.Ed
 class BillActivity : KeyNotePageActivity() { override val screen = Screen.Bill }
 class BillStatsActivity : KeyNotePageActivity() { override val screen = Screen.BillStats }
 class AaSplitActivity : KeyNotePageActivity() { override val screen = Screen.AaSplit }
+class TreatBalanceActivity : KeyNotePageActivity() { override val screen = Screen.TreatBalance }
 class HabitActivity : KeyNotePageActivity() { override val screen = Screen.Habit }
 class SettingsActivity : KeyNotePageActivity() { override val screen = Screen.Settings }
 class AiProviderManageActivity : KeyNotePageActivity() { override val screen = Screen.AiProviderManage }
