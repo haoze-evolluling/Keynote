@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.haoze.keynote.ui.bill.AaSplitScreen
 import com.haoze.keynote.ui.bill.BillScreen
 import com.haoze.keynote.ui.bill.BillStatsScreen
+import com.haoze.keynote.ui.bill.treat.TreatBalanceScreen
 import com.haoze.keynote.ui.chat.AIChatScreen
 import com.haoze.keynote.ui.edit.EditNoteScreen
 import com.haoze.keynote.ui.habit.HabitScreen
@@ -50,6 +51,7 @@ sealed class Screen(val route: String, val title: String) {
     data object Bill : Screen("bill", "记账")
     data object BillStats : Screen("bill_stats", "账单统计")
     data object AaSplit : Screen("aa_split", "AA计算")
+    data object TreatBalance : Screen("treat_balance", "请客平衡")
     data object Habit : Screen("habit", "习惯打卡")
     data object Settings : Screen("settings", "设置")
     data object AiProviderManage : Screen("ai_provider_manage", "AI厂商管理")
@@ -92,6 +94,7 @@ fun AppPage(
             Screen.Bill.route -> BillScreen(onBack = onBack)
             Screen.BillStats.route -> BillStatsScreen(onBack = onBack)
             Screen.AaSplit.route -> AaSplitScreen(onBack = onBack)
+            Screen.TreatBalance.route -> TreatBalanceScreen(onBack = onBack)
             Screen.Habit.route -> HabitScreen(viewModel = koinViewModel(), onBack = onBack)
             Screen.DateGroupNotes.route -> DateGroupNotesScreen(
                 onNavigateToEdit = { id -> onNavigate(Screen.EditNote.route, id, null, null, false) },

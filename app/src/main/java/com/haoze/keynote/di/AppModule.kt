@@ -12,6 +12,7 @@ import com.haoze.keynote.ui.schedule.ScheduleViewModel
 import com.haoze.keynote.ui.todo.TodoViewModel
 import com.haoze.keynote.ui.toolbox.KnowledgeVaultViewModel
 import com.haoze.keynote.ui.trash.TrashViewModel
+import com.haoze.keynote.ui.bill.treat.TreatBalanceViewModel
 import com.haoze.keynote.util.PreferencesManager
 import com.haoze.keynote.viewmodel.EditNoteViewModel
 import com.haoze.keynote.viewmodel.HomeViewModel
@@ -34,6 +35,7 @@ val appModule = module {
     single<HabitDao> { get<KeyNoteDatabase>().habitDao() }
     single<AIChatDao> { get<KeyNoteDatabase>().aiChatDao() }
     single<SmartModuleDao> { get<KeyNoteDatabase>().smartModuleDao() }
+    single<TreatDao> { get<KeyNoteDatabase>().treatDao() }
 
     single { NoteRepository(get(), get(), get()) }
     single { BillRepository(get(), get()) }
@@ -43,6 +45,7 @@ val appModule = module {
     single { HabitRepository(get()) }
     single { AIChatRepository(get()) }
     single { SmartModuleRepository(get()) }
+    single { TreatRepository(get()) }
 
     viewModel { HomeViewModel(get()) }
     viewModel { EditNoteViewModel(get(), get()) }
@@ -56,4 +59,5 @@ val appModule = module {
     viewModel { KnowledgeVaultViewModel(get()) }
     viewModel { TrashViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { BillStatsViewModel(get()) }
+    viewModel { TreatBalanceViewModel(get()) }
 }

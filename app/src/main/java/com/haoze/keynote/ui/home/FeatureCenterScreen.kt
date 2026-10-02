@@ -133,6 +133,13 @@ fun FeatureCenterScreen(
                     leadingIcon = painterResource(R.drawable.ic_people),
                     onClick = { onNavigateToRoute(Screen.AaSplit.route) }
                 )
+                SettingsDivider()
+                SettingsNavigationItem(
+                    title = "请客平衡",
+                    subtitle = "双人轮流请客与消费差额平衡",
+                    leadingIcon = painterResource(R.drawable.ic_account_balance),
+                    onClick = { onNavigateToRoute(Screen.TreatBalance.route) }
+                )
             }
 
 

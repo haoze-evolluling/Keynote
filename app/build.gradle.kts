@@ -146,4 +146,5 @@ dependencies {
     implementation(libs.koin.compose)
     implementation(libs.koin.compose.viewmodel)
     implementation("com.github.jeziellago:compose-markdown:0.5.2")
+    testImplementation("junit:junit:4.13.2")
 }
